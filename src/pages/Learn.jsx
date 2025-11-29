@@ -60,62 +60,95 @@ export default function Learn() {
   return (
     <div className="min-h-screen bg-[#011623] pb-20">
       
-      {/* Dashboard Header */}
-      <div className="bg-[#022031] border-b border-white/5 pt-10 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-end justify-between gap-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0AD9DC] to-blue-600 flex items-center justify-center text-[#011623] font-bold text-2xl">
-                  {user?.email?.[0].toUpperCase() || '?'}
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-white">
-                    Welcome back, <span className="text-[#0AD9DC]">{user?.email?.split('@')[0] || 'Explorer'}</span>
-                  </h1>
-                  <div className="flex items-center gap-4 mt-2 text-slate-400 text-sm">
-                    <span className="flex items-center gap-1">
-                      <Trophy className="w-4 h-4 text-amber-400" /> {xp} XP
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Terminal className="w-4 h-4 text-purple-400" /> Level {Math.floor(xp / 1000) + 1}
-                    </span>
-                  </div>
-                  
-                  {/* Resume Button */}
-                  <div className="mt-6">
-                    <Link to={nextLessonUrl}>
-                        <Button className="bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold px-8 py-6 rounded-full text-lg shadow-[0_0_20px_rgba(10,217,220,0.3)] hover:shadow-[0_0_30px_rgba(10,217,220,0.5)] transition-all">
-                            <PlayCircle className="w-5 h-5 mr-2" />
-                            {nextLessonTitle}
-                        </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Global Progress */}
-              <div className="w-full max-w-md">
-                <div className="flex justify-between text-xs font-medium text-slate-400 mb-2">
-                  <span>Overall Progress</span>
-                  <span>{progressPercent}%</span>
-                </div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-[#0AD9DC] transition-all duration-1000" 
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+      {/* Modern Dashboard Header */}
+      <div className="relative bg-[#011623] pt-8 pb-16 overflow-hidden border-b border-white/5">
+          {/* Background Elements */}
+          <div className="absolute top-0 right-0 w-1/3 h-full bg-[#0AD9DC]/5 blur-[100px] rounded-full pointer-events-none" />
 
-            {/* Badges Widget */}
-            <div className="bg-[#011623]/50 p-4 rounded-xl border border-white/5">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Recent Badges</p>
-              <BadgeStrip earnedBadges={progress?.badges || []} />
-            </div>
+          <div className="container mx-auto px-4 relative z-10">
+              <div className="grid lg:grid-cols-3 gap-8 items-start">
+                  
+                  {/* Left: User Welcome & Main Action */}
+                  <div className="lg:col-span-2 space-y-6">
+                      {/* Welcome Text */}
+                      <div>
+                          <h1 className="text-3xl font-bold text-white mb-2">
+                              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0AD9DC] to-blue-500">{user?.email?.split('@')[0] || 'Explorer'}</span>
+                          </h1>
+                          <p className="text-slate-400">Ready to continue your encrypted journey?</p>
+                      </div>
+
+                      {/* Continue Card */}
+                      <div className="bg-gradient-to-br from-[#022031] to-[#011623] border border-white/10 rounded-2xl p-6 md:p-8 relative group overflow-hidden">
+                           <div className="absolute inset-0 bg-[#0AD9DC]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                           
+                           <div className="relative flex flex-col md:flex-row gap-6 items-center justify-between">
+                              <div className="flex-1 space-y-3">
+                                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0AD9DC]/10 text-[#0AD9DC] text-xs font-bold uppercase tracking-wider">
+                                      <Zap className="w-3.5 h-3.5" />
+                                      Current Mission
+                                  </div>
+                                  <h2 className="text-2xl font-bold text-white">
+                                      {nextLessonTitle.replace(/^(Start: |Continue: |Review: )/, '')}
+                                  </h2>
+                                  <p className="text-slate-400 text-sm">
+                                      {nextLessonTitle.startsWith('Start') ? 'Begin this new lesson' : 'Continue where you left off'}
+                                  </p>
+                              </div>
+
+                              <Link to={nextLessonUrl}>
+                                  <Button className="h-14 px-8 bg-white text-[#011623] hover:bg-[#0AD9DC] font-bold rounded-xl text-lg transition-all shadow-lg hover:shadow-[#0AD9DC]/20 group-hover:scale-105">
+                                      <PlayCircle className="w-5 h-5 mr-2" />
+                                      {nextLessonTitle.split(':')[0]}
+                                  </Button>
+                              </Link>
+                           </div>
+                      </div>
+                  </div>
+
+                  {/* Right: Stats & Progress */}
+                  <div className="space-y-6">
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-[#022031] p-4 rounded-xl border border-white/5 flex flex-col gap-2">
+                              <span className="text-slate-500 text-xs uppercase font-bold">Current Level</span>
+                              <div className="flex items-center gap-2 text-white font-bold text-xl">
+                                   <Terminal className="w-5 h-5 text-purple-400" />
+                                   {Math.floor(xp / 1000) + 1}
+                              </div>
+                          </div>
+                          <div className="bg-[#022031] p-4 rounded-xl border border-white/5 flex flex-col gap-2">
+                              <span className="text-slate-500 text-xs uppercase font-bold">Total XP</span>
+                               <div className="flex items-center gap-2 text-white font-bold text-xl">
+                                   <Trophy className="w-5 h-5 text-amber-400" />
+                                   {xp}
+                              </div>
+                          </div>
+                      </div>
+
+                      {/* Global Progress */}
+                      <div className="bg-[#022031] p-5 rounded-xl border border-white/5">
+                           <div className="flex justify-between items-end mb-3">
+                              <span className="text-slate-400 text-sm font-medium">Curriculum Progress</span>
+                              <span className="text-[#0AD9DC] font-bold text-lg">{progressPercent}%</span>
+                           </div>
+                           <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                              <div 
+                                  className="h-full bg-gradient-to-r from-[#0AD9DC] to-blue-500 transition-all duration-1000" 
+                                  style={{ width: `${progressPercent}%` }}
+                              />
+                           </div>
+                      </div>
+
+                       {/* Badges Mini Widget */}
+                      <div className="bg-[#022031]/50 p-4 rounded-xl border border-white/5">
+                          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Recent Achievements</p>
+                          <BadgeStrip earnedBadges={progress?.badges || []} />
+                      </div>
+                  </div>
+
+              </div>
           </div>
-        </div>
       </div>
 
       {/* Main Content */}
