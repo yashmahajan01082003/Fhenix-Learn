@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { 
   LayoutDashboard, 
   User,
-  ArrowRight
+  ArrowRight,
+  Trophy
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-export default function AppShell({ children, user }) {
+export default function AppShell({ children, user, userProgress }) {
   // Simple active state check (mocked for now or based on window location)
   const isActive = (path) => window.location.pathname === path;
 
@@ -55,6 +56,12 @@ export default function AppShell({ children, user }) {
              </Button>
             ) : (
               <div className="flex items-center gap-4">
+                {userProgress && (
+                    <div className="hidden md:flex items-center gap-2 bg-[#0AD9DC]/10 px-3 py-1.5 rounded-full border border-[#0AD9DC]/20">
+                        <Trophy className="w-3.5 h-3.5 text-[#0AD9DC]" />
+                        <span className="text-xs font-bold text-[#0AD9DC]">{userProgress.xp || 0} XP</span>
+                    </div>
+                )}
                 <Link to={createPageUrl('Profile')} className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
                   <div className="hidden sm:flex flex-col items-end mr-2">
                     <span className="text-sm font-medium text-white group-hover:text-[#0AD9DC] transition-colors">{user.email.split('@')[0]}</span>

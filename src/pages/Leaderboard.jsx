@@ -14,14 +14,9 @@ export default function Leaderboard() {
         const user = await base44.auth.me();
         setCurrentUser(user);
 
-        // Fetch progress sorted by XP descending
-        // Note: In a real scenario, we rely on the backend to support sorting/filtering
-        // For this mock, we might just get a list and sort client side if the list is small
-        const allProgress = await base44.entities.UserProgress.list();
-        
-        // Sort by XP
-        const sorted = allProgress.sort((a, b) => (b.xp || 0) - (a.xp || 0));
-        setLeaders(sorted);
+        // Fetch progress sorted by XP descending using backend sort
+        const allProgress = await base44.entities.UserProgress.list('-xp', 50);
+        setLeaders(allProgress);
       } catch (e) {
         console.error("Failed to fetch leaderboard", e);
       } finally {

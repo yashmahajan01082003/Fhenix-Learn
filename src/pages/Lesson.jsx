@@ -100,6 +100,7 @@ export default function Lesson() {
             // Create progress record if it doesn't exist
             const newProgress = await base44.entities.UserProgress.create({
               user_id: currentUser.id,
+              display_name: currentUser.email?.split('@')[0] || 'Anonymous',
               xp: 0,
               completed_lessons: [],
               completed_modules: [],

@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 
 export default function Layout({ children }) {
   const [user, setUser] = useState(null);
+  const [userProgress, setUserProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
@@ -13,9 +14,17 @@ export default function Layout({ children }) {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        
+        if (currentUser) {
+            const progress = await base44.entities.UserProgress.list({ user_id: currentUser.id });
+            if (progress.length > 0) {
+                setUserProgress(progress[0]);
+            }
+        }
       } catch (e) {
         // Not logged in
         setUser(null);
+        setUserProgress(null);
       } finally {
         setLoading(false);
       }
@@ -32,7 +41,7 @@ export default function Layout({ children }) {
   }
 
   return (
-    <AppShell user={user}>
+    <AppShell user={user} userProgress={userProgress}>
       {children}
     </AppShell>
   );
