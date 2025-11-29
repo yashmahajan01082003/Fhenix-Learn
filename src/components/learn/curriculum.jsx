@@ -376,7 +376,13 @@ contract HiddenValue {
 
   These are encrypted analogs of Solidity’s \`uintX\` types.
 
-  **Available sizes:** \`euint8\`, \`euint16\`, \`euint32\`, \`euint64\`, and \`euint128\`.
+  | Encrypted Type | Solidity Analog | Size |
+  | :--- | :--- | :--- |
+  | \`euint8\` | \`uint8\` | 8-bit |
+  | \`euint16\` | \`uint16\` | 16-bit |
+  | \`euint32\` | \`uint32\` | 32-bit |
+  | \`euint64\` | \`uint64\` | 64-bit |
+  | \`euint128\` | \`uint128\` | 128-bit |
 
   ### What they represent
   An \`euintX\` is:
