@@ -8,7 +8,7 @@ import ModulePathItem from '@/components/learn/ModulePathItem';
 import BadgeStrip from '@/components/learn/BadgeStrip';
 import PlaygroundCard from '@/components/learn/PlaygroundCard';
 import { Button } from '@/components/ui/button';
-import { Trophy, Zap, Terminal } from 'lucide-react';
+import { Trophy, Zap, Terminal, PlayCircle } from 'lucide-react';
 
 export default function Learn() {
   const navigate = useNavigate();
@@ -75,6 +75,33 @@ export default function Learn() {
   const totalModules = CURRICULUM.length;
   const progressPercent = Math.round((completedModulesCount / totalModules) * 100);
 
+  // Calculate Next Lesson (Resume Logic)
+  let nextLessonUrl = null;
+  let nextLessonTitle = "Start Learning";
+  
+  for (const module of CURRICULUM) {
+    const completedLessons = progress?.completed_lessons || [];
+    const incompleteLesson = module.lessons.find(l => !completedLessons.includes(l.id));
+    
+    // Check if module is locked (previous module not complete)
+    const moduleIndex = CURRICULUM.findIndex(m => m.id === module.id);
+    const prevModule = CURRICULUM[moduleIndex - 1];
+    const isLocked = moduleIndex > 0 && !progress?.completed_modules?.includes(prevModule.id);
+    
+    if (incompleteLesson && !isLocked) {
+      nextLessonUrl = `${createPageUrl('Lesson')}?module=${module.slug}&lesson=${incompleteLesson.id}`;
+      nextLessonTitle = `Continue: ${incompleteLesson.title}`;
+      break;
+    }
+  }
+  
+  // Fallback for brand new user
+  if (!nextLessonUrl && CURRICULUM.length > 0) {
+      const firstMod = CURRICULUM[0];
+      nextLessonUrl = `${createPageUrl('Lesson')}?module=${firstMod.slug}&lesson=${firstMod.lessons[0].id}`;
+      nextLessonTitle = "Start: " + firstMod.lessons[0].title;
+  }
+
   return (
     <div className="min-h-screen bg-[#011623] pb-20">
       
@@ -98,6 +125,16 @@ export default function Learn() {
                     <span className="flex items-center gap-1">
                       <Terminal className="w-4 h-4 text-purple-400" /> Level {Math.floor(xp / 1000) + 1}
                     </span>
+                  </div>
+                  
+                  {/* Resume Button */}
+                  <div className="mt-6">
+                    <Link to={nextLessonUrl}>
+                        <Button className="bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold px-8 py-6 rounded-full text-lg shadow-[0_0_20px_rgba(10,217,220,0.3)] hover:shadow-[0_0_30px_rgba(10,217,220,0.5)] transition-all">
+                            <PlayCircle className="w-5 h-5 mr-2" />
+                            {nextLessonTitle}
+                        </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

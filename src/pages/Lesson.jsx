@@ -130,7 +130,7 @@ export default function Lesson() {
       newCompletedLessons.push(currentLesson.id);
     }
 
-    let newXP = (progress.xp || 0) + 50; // 50 XP per lesson
+    let newXP = (progress.xp || 0) + 50; // 50 XP per challenge/lesson
     let newCompletedModules = [...(progress.completed_modules || [])];
     let newBadges = [...(progress.badges || [])];
 
@@ -140,7 +140,7 @@ export default function Lesson() {
     
     if (allFinished && !newCompletedModules.includes(currentModule.id)) {
       newCompletedModules.push(currentModule.id);
-      newXP += 500; // Bonus for module
+      newXP += 100; // Bonus for module
       newBadges.push(currentModule.id); // Badge ID matches module ID
     }
 
@@ -239,9 +239,15 @@ export default function Lesson() {
 
           {/* Celebration Overlay */}
           {showCelebration && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                <div className="relative bg-[#022031] border-2 border-[#0AD9DC] p-8 rounded-2xl text-center animate-in fade-in zoom-in duration-300 shadow-[0_0_50px_rgba(10,217,220,0.5)]">
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCelebration(false)} />
+                <div className="relative bg-[#022031] border-2 border-[#0AD9DC] p-8 rounded-2xl text-center animate-in fade-in zoom-in duration-300 shadow-[0_0_50px_rgba(10,217,220,0.5)] min-w-[300px]">
+                    <button 
+                        onClick={() => setShowCelebration(false)}
+                        className="absolute top-2 right-2 text-slate-400 hover:text-white p-1"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                     <div className="text-6xl mb-4">🎉</div>
                     <h2 className="text-3xl font-bold text-white mb-2">Lesson Completed!</h2>
                     <p className="text-[#0AD9DC] text-xl font-bold">+50 XP</p>
