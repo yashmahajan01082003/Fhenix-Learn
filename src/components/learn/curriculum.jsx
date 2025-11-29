@@ -386,15 +386,7 @@ contract HiddenValue {
   * **never decryptable** inside the contract
 
   ### What operations they support
-  \`euintX\` supports a rich set of operations defined in \`FHE.sol\`:
-  * addition
-  * subtraction
-  * multiplication
-  * division
-  * remainder
-  * bitwise ops
-  * shifts
-  * comparisons
+  \`euintX\` supports a rich set of operations defined in \`FHE.sol\`, including addition, subtraction, multiplication, division, remainder, bitwise ops, shifts, and comparisons.
 
   All of these operate entirely on encrypted data.
 
@@ -424,12 +416,7 @@ contract HiddenValue {
   3. Validation
   4. Compatibility with \`FHE.sol\`
 
-  The input types directly match the encrypted compute types:
-  * \`InEuint8\`
-  * \`InEuint16\`
-  * \`InEuint32\`
-  * \`InEuint64\`
-  * \`InEuint128\`
+  The input types directly match the encrypted compute types: \`InEuint8\`, \`InEuint16\`, \`InEuint32\`, \`InEuint64\`, and \`InEuint128\`.
 
   ## Why encrypted inputs are encapsulated
 
@@ -492,20 +479,9 @@ contract HiddenValue {
 
   ## Supported arithmetic operations
 
-  All \`euintX\` types support standard arithmetic operators which are overloaded to work on encrypted data:
+  All \`euintX\` types support standard arithmetic operators which are overloaded to work on encrypted data: \`a + b\`, \`a - b\`, \`a * b\`, \`a / b\`, and \`a % b\`.
 
-  * \`a + b\`
-  * \`a - b\`
-  * \`a * b\`
-  * \`a / b\`
-  * \`a % b\`
-
-  These are operator overloads around FHE-safe functions:
-  * \`FHE.add(a, b)\`
-  * \`FHE.sub(a, b)\`
-  * \`FHE.mul(a, b)\`
-  * \`FHE.div(a, b)\`
-  * \`FHE.mod(a, b)\`
+  These are operator overloads around FHE-safe functions: \`FHE.add(a, b)\`, \`FHE.sub(a, b)\`, \`FHE.mul(a, b)\`, \`FHE.div(a, b)\`, and \`FHE.mod(a, b)\`.
 
   ## Key property: all arithmetic outputs remain encrypted
 
@@ -550,11 +526,7 @@ contract HiddenValue {
 
   ## Available comparison functions
 
-  * \`a.eq(b)\` (Equal)
-  * \`a.gt(b)\` (Greater Than)
-  * \`a.gte(b)\` (Greater Than or Equal)
-  * \`a.lt(b)\` (Less Than)
-  * \`a.lte(b)\` (Less Than or Equal)
+  You can use functions like \`a.eq(b)\` (Equal), \`a.gt(b)\` (Greater Than), \`a.gte(b)\` (Greater Than or Equal), \`a.lt(b)\` (Less Than), and \`a.lte(b)\` (Less Than or Equal).
 
   These return an \`ebool\` ciphertext.
 
