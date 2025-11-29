@@ -6,10 +6,8 @@ import FhenixLearnLogo from '../brand/FhenixLearnLogo';
 import { Button } from '@/components/ui/button';
 import { 
   LayoutDashboard, 
-  BookOpen, 
-  Award, 
-  FileText,
-  User
+  User,
+  ArrowRight
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
@@ -32,11 +30,16 @@ export default function AppShell({ children, user }) {
           </Link>
 
           {/* Center: Links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <NavLink to={createPageUrl('Learn')} icon={LayoutDashboard} label="Curriculum" active={isActive('/Learn')} />
-            {/* <NavLink to="#" icon={BookOpen} label="Playgrounds" />
-            <NavLink to="#" icon={Award} label="Badges" />
-            <NavLink to="#" icon={FileText} label="Docs" /> */}
+          <nav className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
+            <NavLink to={createPageUrl('Learn')} label="Curriculum" active={isActive('/Learn')} />
+            <a 
+              href="https://cofhe-docs.fhenix.zone/docs/devdocs/overview" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-1.5 text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              Docs <ArrowRight className="w-3 h-3 -rotate-45" />
+            </a>
           </nav>
 
           {/* Right: Actions */}
@@ -81,15 +84,16 @@ export default function AppShell({ children, user }) {
   );
 }
 
-function NavLink({ to, icon: Icon, label, active }) {
+function NavLink({ to, label, active }) {
   return (
     <Link 
       to={to} 
-      className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-        active ? 'text-[#0AD9DC]' : 'text-slate-400 hover:text-white'
+      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+        active 
+          ? 'bg-[#0AD9DC] text-[#011623] shadow-[0_0_15px_rgba(10,217,220,0.3)]' 
+          : 'text-slate-400 hover:text-white hover:bg-white/5'
       }`}
     >
-      <Icon className="w-4 h-4" />
       {label}
     </Link>
   );

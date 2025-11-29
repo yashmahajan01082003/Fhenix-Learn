@@ -6,6 +6,7 @@ import { ShieldCheck, Code2, Zap, ArrowRight, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CURRICULUM } from '@/components/learn/curriculum';
 import ModuleCard from '@/components/modules/ModuleCard';
+import PlaygroundCard from '@/components/learn/PlaygroundCard';
 
 export default function Home() {
   // Only show first 3 modules as preview
@@ -121,6 +122,33 @@ export default function Home() {
                  />
                </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Playgrounds Preview */}
+      <section className="py-24 bg-[#00101a] border-t border-white/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4">Interactive Sandboxes</h2>
+            <p className="text-slate-400 max-w-xl mx-auto">
+              Get your hands dirty with our browser-based playgrounds. No environment setup required.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+             <PlaygroundCard 
+              title="Encryption Playground" 
+              description="Experiment with client-side encryption using cofhejs before sending to chain."
+            />
+            <PlaygroundCard 
+              title="FHE Operations" 
+              description="Test basic homomorphic operations like add, sub, and bitwise logic."
+            />
+             <PlaygroundCard 
+              title="Permission Generator" 
+              description="Generate and sign access permits to view encrypted state."
+            />
           </div>
         </div>
       </section>

@@ -6,6 +6,8 @@ import { CURRICULUM } from '@/components/learn/curriculum';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CheckCircle, Play, HelpCircle } from 'lucide-react';
+import EncryptedOperationVisualizer from '@/components/learn/interactive/EncryptedOperationVisualizer';
+import CodeCompare from '@/components/learn/interactive/CodeCompare';
 
 const MarkdownComponents = {
   h1: ({node, ...props}) => <h1 className="text-3xl font-bold text-white mt-10 mb-6 pb-4 border-b border-white/10" {...props} />,
@@ -25,6 +27,17 @@ const MarkdownComponents = {
       if (inline) {
           return <code className="bg-[#0AD9DC]/10 text-[#0AD9DC] px-1.5 py-0.5 rounded text-sm font-mono border border-[#0AD9DC]/20" {...props}>{children}</code>;
       }
+      const match = /language-(\w+)/.exec(className || '');
+      const lang = match ? match[1] : '';
+
+      if (lang === 'visualizer') {
+        return <EncryptedOperationVisualizer />;
+      }
+      
+      if (lang === 'compare') {
+        return <CodeCompare />;
+      }
+
       return (
           <div className="relative my-8 rounded-xl overflow-hidden bg-[#00101a] border border-white/10 shadow-2xl group">
               <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
@@ -33,10 +46,10 @@ const MarkdownComponents = {
                       <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
                       <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
                   </div>
-                  <span className="text-xs text-slate-500 font-mono uppercase tracking-wider">code</span>
+                  <span className="text-xs text-slate-500 font-mono uppercase tracking-wider">{lang || 'code'}</span>
               </div>
               <pre className="p-6 overflow-x-auto text-sm font-mono text-slate-300 leading-relaxed">
-                  <code {...props}>{children}</code>
+                  <code className={className} {...props}>{children}</code>
               </pre>
           </div>
       );
