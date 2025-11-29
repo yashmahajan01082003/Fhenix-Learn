@@ -64,8 +64,9 @@ const MarkdownComponents = {
 export default function Lesson() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
-  const [progress, setProgress] = useState(null);
+  
+  // Use context instead of local state
+  const { user, progress, loading, updateProgress } = useUserProgress();
   
   // Parse params
   const params = new URLSearchParams(window.location.search);
@@ -77,87 +78,45 @@ export default function Lesson() {
   const currentLessonIndex = currentModule?.lessons.findIndex(l => l.id === lessonId);
   const currentLesson = currentModule?.lessons[currentLessonIndex];
 
-  // State
+  // Local UI State
   const [isCompleted, setIsCompleted] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [earnedXP, setEarnedXP] = useState(0);
 
+  // Sync with progress and handle locks
   useEffect(() => {
-    const init = async () => {
-      if (!currentModule || !currentLesson) return;
-      
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
+    if (!currentModule || !currentLesson || loading) return;
+
+    if (progress) {
+        // Sync completion status
+        setIsCompleted(progress.completed_lessons?.includes(currentLesson.id));
+
+        // Sequential Lock Check
+        const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
+        const prevModule = currentModuleIndex > 0 ? CURRICULUM[currentModuleIndex - 1] : null;
         
-        if (currentUser) {
-          let p;
-          
-          // STRATEGY: Use passed state if available (fresher), otherwise fetch (potentially stale)
-          if (location.state?.progress && location.state.progress.user_id === currentUser.id) {
-             p = location.state.progress;
-             // Refresh from DB in background just in case, but don't block
-             base44.entities.UserProgress.list({ user_id: currentUser.id }).then(res => {
-                 if(res.length > 0) {
-                     // Only update if DB has MORE completed lessons than local state (merge logic could be complex, skipping for now to rely on passed state)
-                 }
-             });
-          } else {
-             const res = await base44.entities.UserProgress.list({ user_id: currentUser.id });
-             if (res.length > 0) {
-               p = res[0];
-             } else {
-                // Create progress record if it doesn't exist
-                p = await base44.entities.UserProgress.create({
-                  user_id: currentUser.id,
-                  display_name: currentUser.email?.split('@')[0] || 'Anonymous',
-                  xp: 0,
-                  completed_lessons: [],
-                  completed_modules: [],
-                  badges: []
-                });
-             }
-          }
+        // Unlocked if: It's the first module OR previous module is explicitly marked complete
+        const isModuleLocked = prevModule && !progress.completed_modules.includes(prevModule.id);
+        
+        const currentLessonIdx = currentModule.lessons.findIndex(l => l.id === currentLesson.id);
+        const prevLesson = currentLessonIdx > 0 ? currentModule.lessons[currentLessonIdx - 1] : null;
+        
+        // Unlocked if: It's the first lesson OR previous lesson is complete
+        // Also allow if the lesson itself is already complete (revisiting)
+        const isLessonLocked = prevLesson && !progress.completed_lessons.includes(prevLesson.id) && !progress.completed_lessons.includes(currentLesson.id);
 
-          if (p) {
-            setProgress(p);
-            setIsCompleted(p.completed_lessons?.includes(currentLesson.id));
-
-            // Sequential Lock Check
-            const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
-            const prevModule = currentModuleIndex > 0 ? CURRICULUM[currentModuleIndex - 1] : null;
-            
-            // Unlocked if: It's the first module OR previous module is explicitly marked complete
-            const isModuleLocked = prevModule && !p.completed_modules.includes(prevModule.id);
-            
-            const currentLessonIdx = currentModule.lessons.findIndex(l => l.id === currentLesson.id);
-            const prevLesson = currentLessonIdx > 0 ? currentModule.lessons[currentLessonIdx - 1] : null;
-            
-            // Unlocked if: It's the first lesson OR previous lesson is complete
-            // Also allow if the lesson itself is already complete (revisiting)
-            const isLessonLocked = prevLesson && !p.completed_lessons.includes(prevLesson.id) && !p.completed_lessons.includes(currentLesson.id);
-
-            if (isModuleLocked || isLessonLocked) {
-                console.warn("Locked content accessed, redirecting.", { isModuleLocked, isLessonLocked, completed: p.completed_lessons });
-                navigate(createPageUrl('Learn'));
-            }
-          }
+        if (isModuleLocked || isLessonLocked) {
+            console.warn("Locked content accessed, redirecting.", { isModuleLocked, isLessonLocked });
+            navigate(createPageUrl('Learn'));
         }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, [moduleSlug, lessonId]);
+    }
+  }, [currentModule, currentLesson, progress, loading, navigate]);
 
   const handleComplete = async () => {
     if (!user || !progress) return;
 
-    // Optimistic update
+    // Optimistic update for UI
     setIsCompleted(true);
 
     // Prepare updates
@@ -186,23 +145,9 @@ export default function Lesson() {
       newBadges.push(currentModule.id); // Badge ID matches module ID
     }
 
-    // If no new XP gained, we might still want to update badges/modules if they were somehow missed, 
-    // but primarily we want to avoid calling update if nothing changed? 
-    // For now, we always update to be safe, but we rely on the checks above for XP logic.
-
     try {
-      // Optimistically update local state first to ensure responsiveness
-      const updatedProgress = {
-        ...progress,
-        completed_lessons: newCompletedLessons,
-        completed_modules: newCompletedModules,
-        xp: newXP,
-        badges: newBadges
-      };
-      setProgress(updatedProgress);
-
-      // Then persist
-      await base44.entities.UserProgress.update(progress.id, {
+      // Use Context to update
+      await updateProgress({
         completed_lessons: newCompletedLessons,
         completed_modules: newCompletedModules,
         xp: newXP,
@@ -223,20 +168,17 @@ export default function Lesson() {
   };
 
   const handleNext = () => {
-    // Pass the current 'progress' state to the next route to prevent stale DB reads
-    const state = { progress };
-
     if (currentLessonIndex < currentModule.lessons.length - 1) {
       const nextLesson = currentModule.lessons[currentLessonIndex + 1];
-      navigate(`${createPageUrl('Lesson')}?module=${moduleSlug}&lesson=${nextLesson.id}`, { state });
+      navigate(`${createPageUrl('Lesson')}?module=${moduleSlug}&lesson=${nextLesson.id}`);
     } else {
         // Next Module logic
         const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
         if (currentModuleIndex < CURRICULUM.length - 1) {
             const nextModule = CURRICULUM[currentModuleIndex + 1];
-            navigate(`${createPageUrl('Lesson')}?module=${nextModule.slug}&lesson=${nextModule.lessons[0].id}`, { state });
+            navigate(`${createPageUrl('Lesson')}?module=${nextModule.slug}&lesson=${nextModule.lessons[0].id}`);
         } else {
-            navigate(createPageUrl('Learn'), { state: { progress } });
+            navigate(createPageUrl('Learn'));
         }
     }
   };
