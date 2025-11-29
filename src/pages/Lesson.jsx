@@ -93,13 +93,14 @@ export default function Lesson() {
         
         if (currentUser) {
           const res = await base44.entities.UserProgress.list({ user_id: currentUser.id });
+          let p;
           if (res.length > 0) {
-            const p = res[0];
+            p = res[0];
             setProgress(p);
             setIsCompleted(p.completed_lessons?.includes(currentLesson.id));
           } else {
             // Create progress record if it doesn't exist
-            const newProgress = await base44.entities.UserProgress.create({
+            p = await base44.entities.UserProgress.create({
               user_id: currentUser.id,
               display_name: currentUser.email?.split('@')[0] || 'Anonymous',
               xp: 0,
@@ -107,7 +108,21 @@ export default function Lesson() {
               completed_modules: [],
               badges: []
             });
-            setProgress(newProgress);
+            setProgress(p);
+          }
+
+          // Sequential Lock Check
+          const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
+          const prevModule = currentModuleIndex > 0 ? CURRICULUM[currentModuleIndex - 1] : null;
+          const isModuleLocked = prevModule && !p.completed_modules.includes(prevModule.id);
+          
+          const currentLessonIdx = currentModule.lessons.findIndex(l => l.id === currentLesson.id);
+          const prevLesson = currentLessonIdx > 0 ? currentModule.lessons[currentLessonIdx - 1] : null;
+          const isLessonLocked = prevLesson && !p.completed_lessons.includes(prevLesson.id);
+
+          if (isModuleLocked || isLessonLocked) {
+              // Redirect to Learn page if trying to access locked content
+              navigate(createPageUrl('Learn'));
           }
         }
       } catch (e) {
@@ -189,10 +204,11 @@ export default function Lesson() {
       const nextLesson = currentModule.lessons[currentLessonIndex + 1];
       navigate(`${createPageUrl('Lesson')}?module=${moduleSlug}&lesson=${nextLesson.id}`);
     } else {
-        // Next Module?
+        // Next Module logic - check if next module is unlocked (it should be if we just finished this one)
         const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
         if (currentModuleIndex < CURRICULUM.length - 1) {
             const nextModule = CURRICULUM[currentModuleIndex + 1];
+            // Allow navigation to the first lesson of the next module
             navigate(`${createPageUrl('Lesson')}?module=${nextModule.slug}&lesson=${nextModule.lessons[0].id}`);
         } else {
             navigate(createPageUrl('Learn'));
@@ -217,10 +233,9 @@ export default function Lesson() {
               const isActive = l.id === currentLesson.id;
               const isDone = progress?.completed_lessons?.includes(l.id);
               
-              // Check unlock status: Previous lesson must be done, or this is the first lesson
-              // Actually, simpler: allow if index == 0 OR previous lesson is in completed_lessons
               const previousLessonId = idx > 0 ? currentModule.lessons[idx - 1].id : null;
-              const isUnlocked = idx === 0 || (previousLessonId && progress?.completed_lessons?.includes(previousLessonId));
+              // Explicit check: Unlocked if it is the first lesson, OR previous lesson is completed
+              const isUnlocked = idx === 0 || (progress?.completed_lessons?.includes(previousLessonId));
 
               return (
                 <div key={l.id} className={!isUnlocked ? 'opacity-50 pointer-events-none' : ''}>

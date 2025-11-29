@@ -95,11 +95,20 @@ export default function Learn() {
     }
   }
   
-  // Fallback for brand new user
+  // Fallback for brand new user or all complete
   if (!nextLessonUrl && CURRICULUM.length > 0) {
-      const firstMod = CURRICULUM[0];
-      nextLessonUrl = `${createPageUrl('Lesson')}?module=${firstMod.slug}&lesson=${firstMod.lessons[0].id}`;
-      nextLessonTitle = "Start: " + firstMod.lessons[0].title;
+      // If nothing incomplete found, check if user is brand new (no progress) or finished everything
+      if (!progress || progress.completed_lessons.length === 0) {
+          const firstMod = CURRICULUM[0];
+          nextLessonUrl = `${createPageUrl('Lesson')}?module=${firstMod.slug}&lesson=${firstMod.lessons[0].id}`;
+          nextLessonTitle = "Start: " + firstMod.lessons[0].title;
+      } else {
+          // All done? Point to the last lesson of last module or just stay on dashboard
+           const lastMod = CURRICULUM[CURRICULUM.length - 1];
+           const lastLesson = lastMod.lessons[lastMod.lessons.length - 1];
+           nextLessonUrl = `${createPageUrl('Lesson')}?module=${lastMod.slug}&lesson=${lastLesson.id}`;
+           nextLessonTitle = "Review: " + lastLesson.title;
+      }
   }
 
   return (
