@@ -50,6 +50,7 @@ export default function Learn() {
             });
             setProgress(newProgress);
           }
+        }
       } catch (e) {
         console.error("Auth/Progress error", e);
       } finally {
