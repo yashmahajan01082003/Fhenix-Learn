@@ -34,7 +34,7 @@ export default function Home() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0AD9DC]/10 border border-[#0AD9DC]/20 text-[#0AD9DC] text-sm font-bold tracking-wide mb-8"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#0AD9DC]/10 border border-[#0AD9DC]/20 text-[#0AD9DC] text-sm font-bold tracking-wide mb-8 font-mono uppercase"
           >
             <span className="w-2 h-2 rounded-full bg-[#0AD9DC] animate-pulse" />
             LEARN FHE ON ETHEREUM
@@ -44,7 +44,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight mb-6"
+            className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight mb-6 font-display"
           >
             Master <span className="text-[#0AD9DC] font-mono">Confidential Computing</span> <br className="hidden md:block" /> 
             with coFHE
@@ -66,13 +66,13 @@ export default function Home() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link to={createPageUrl('Learn')}>
-              <Button size="lg" className="bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold rounded-full px-8 h-14 text-lg w-full sm:w-auto">
+              <Button size="lg" className="bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold rounded-lg px-8 h-14 text-lg w-full sm:w-auto font-display tracking-wide">
                 Start Learning
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link to={createPageUrl('Learn')}>
-              <Button variant="outline" size="lg" className="border-white/10 text-white hover:bg-white/5 rounded-full px-8 h-14 text-lg w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="border-white/10 text-white hover:bg-white/5 rounded-lg px-8 h-14 text-lg w-full sm:w-auto font-display tracking-wide">
                 View Curriculum
               </Button>
             </Link>
