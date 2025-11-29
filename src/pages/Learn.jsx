@@ -152,13 +152,16 @@ export default function Learn() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 -mt-8">
+      <div className="container mx-auto px-4 py-12">
         
         {/* Modules Path */}
-        <div className="mb-20">
-          <h2 className="text-2xl font-bold text-white mt-8 mb-10">Learning Path</h2>
+        <div className="mb-20 max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-10">
+             <h2 className="text-2xl font-bold text-white">Learning Path</h2>
+             <div className="h-px flex-1 bg-white/10 ml-8" />
+          </div>
 
-          <div className="max-w-5xl mx-auto space-y-0">
+          <div className="space-y-0">
             {CURRICULUM.map((module, index) => {
               // Module Locking Logic
               const prevModule = CURRICULUM[index - 1];
