@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { CURRICULUM } from '@/components/learn/curriculum';
@@ -63,6 +63,7 @@ const MarkdownComponents = {
 
 export default function Lesson() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [progress, setProgress] = useState(null);
   
@@ -92,37 +93,52 @@ export default function Lesson() {
         setUser(currentUser);
         
         if (currentUser) {
-          const res = await base44.entities.UserProgress.list({ user_id: currentUser.id });
           let p;
-          if (res.length > 0) {
-            p = res[0];
-            setProgress(p);
-            setIsCompleted(p.completed_lessons?.includes(currentLesson.id));
+          
+          // STRATEGY: Use passed state if available (fresher), otherwise fetch (potentially stale)
+          if (location.state?.progress && location.state.progress.user_id === currentUser.id) {
+             p = location.state.progress;
+             // Refresh from DB in background just in case, but don't block
+             base44.entities.UserProgress.list({ user_id: currentUser.id }).then(res => {
+                 if(res.length > 0) {
+                     // Only update if DB has MORE completed lessons than local state (merge logic could be complex, skipping for now to rely on passed state)
+                 }
+             });
           } else {
-            // Create progress record if it doesn't exist
-            p = await base44.entities.UserProgress.create({
-              user_id: currentUser.id,
-              display_name: currentUser.email?.split('@')[0] || 'Anonymous',
-              xp: 0,
-              completed_lessons: [],
-              completed_modules: [],
-              badges: []
-            });
-            setProgress(p);
+             const res = await base44.entities.UserProgress.list({ user_id: currentUser.id });
+             if (res.length > 0) {
+               p = res[0];
+             } else {
+                // Create progress record if it doesn't exist
+                p = await base44.entities.UserProgress.create({
+                  user_id: currentUser.id,
+                  display_name: currentUser.email?.split('@')[0] || 'Anonymous',
+                  xp: 0,
+                  completed_lessons: [],
+                  completed_modules: [],
+                  badges: []
+                });
+             }
           }
 
-          // Sequential Lock Check
-          const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
-          const prevModule = currentModuleIndex > 0 ? CURRICULUM[currentModuleIndex - 1] : null;
-          const isModuleLocked = prevModule && !p.completed_modules.includes(prevModule.id);
-          
-          const currentLessonIdx = currentModule.lessons.findIndex(l => l.id === currentLesson.id);
-          const prevLesson = currentLessonIdx > 0 ? currentModule.lessons[currentLessonIdx - 1] : null;
-          const isLessonLocked = prevLesson && !p.completed_lessons.includes(prevLesson.id);
+          if (p) {
+            setProgress(p);
+            setIsCompleted(p.completed_lessons?.includes(currentLesson.id));
 
-          if (isModuleLocked || isLessonLocked) {
-              // Redirect to Learn page if trying to access locked content
-              navigate(createPageUrl('Learn'));
+            // Sequential Lock Check
+            const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
+            const prevModule = currentModuleIndex > 0 ? CURRICULUM[currentModuleIndex - 1] : null;
+            const isModuleLocked = prevModule && !p.completed_modules.includes(prevModule.id);
+            
+            const currentLessonIdx = currentModule.lessons.findIndex(l => l.id === currentLesson.id);
+            const prevLesson = currentLessonIdx > 0 ? currentModule.lessons[currentLessonIdx - 1] : null;
+            // Check if previous lesson is unlocked. 
+            const isLessonLocked = prevLesson && !p.completed_lessons.includes(prevLesson.id);
+
+            if (isModuleLocked || isLessonLocked) {
+                console.warn("Locked content accessed, redirecting.", { isModuleLocked, isLessonLocked, completed: p.completed_lessons });
+                navigate(createPageUrl('Learn'));
+            }
           }
         }
       } catch (e) {
@@ -171,16 +187,18 @@ export default function Lesson() {
     // For now, we always update to be safe, but we rely on the checks above for XP logic.
 
     try {
-      await base44.entities.UserProgress.update(progress.id, {
+      // Optimistically update local state first to ensure responsiveness
+      const updatedProgress = {
+        ...progress,
         completed_lessons: newCompletedLessons,
         completed_modules: newCompletedModules,
         xp: newXP,
         badges: newBadges
-      });
-      
-      // Refresh progress state
-      setProgress({
-        ...progress,
+      };
+      setProgress(updatedProgress);
+
+      // Then persist
+      await base44.entities.UserProgress.update(progress.id, {
         completed_lessons: newCompletedLessons,
         completed_modules: newCompletedModules,
         xp: newXP,
@@ -200,16 +218,18 @@ export default function Lesson() {
   };
 
   const handleNext = () => {
+    // Pass the current 'progress' state to the next route to prevent stale DB reads
+    const state = { progress };
+
     if (currentLessonIndex < currentModule.lessons.length - 1) {
       const nextLesson = currentModule.lessons[currentLessonIndex + 1];
-      navigate(`${createPageUrl('Lesson')}?module=${moduleSlug}&lesson=${nextLesson.id}`);
+      navigate(`${createPageUrl('Lesson')}?module=${moduleSlug}&lesson=${nextLesson.id}`, { state });
     } else {
-        // Next Module logic - check if next module is unlocked (it should be if we just finished this one)
+        // Next Module logic
         const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
         if (currentModuleIndex < CURRICULUM.length - 1) {
             const nextModule = CURRICULUM[currentModuleIndex + 1];
-            // Allow navigation to the first lesson of the next module
-            navigate(`${createPageUrl('Lesson')}?module=${nextModule.slug}&lesson=${nextModule.lessons[0].id}`);
+            navigate(`${createPageUrl('Lesson')}?module=${nextModule.slug}&lesson=${nextModule.lessons[0].id}`, { state });
         } else {
             navigate(createPageUrl('Learn'));
         }
