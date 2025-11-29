@@ -33,14 +33,26 @@ export default function Learn() {
             // Initialize progress if none exists
             const newProgress = await base44.entities.UserProgress.create({
               user_id: currentUser.id,
+              display_name: currentUser.email?.split('@')[0] || 'Anonymous',
               xp: 0,
               completed_lessons: [],
               completed_modules: [],
               badges: []
             });
             setProgress(newProgress);
-          }
-        }
+            } else {
+              // Ensure display_name is synced
+              const currentP = res[0];
+              if (!currentP.display_name && currentUser.email) {
+                  const updated = await base44.entities.UserProgress.update(currentP.id, {
+                      display_name: currentUser.email.split('@')[0]
+                  });
+                  setProgress(updated);
+              } else {
+                  setProgress(currentP);
+              }
+            }
+            }
       } catch (e) {
         console.error("Auth/Progress error", e);
       } finally {

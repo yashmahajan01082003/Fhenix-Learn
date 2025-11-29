@@ -32,6 +32,7 @@ export default function AppShell({ children, user }) {
           {/* Center: Links */}
           <nav className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
           <NavLink to={createPageUrl('Learn')} label="Curriculum" active={isActive('/Learn')} />
+          <NavLink to={createPageUrl('Leaderboard')} label="Leaderboard" active={isActive('/Leaderboard')} />
           <NavLink to={createPageUrl('Profile')} label="My Profile" active={isActive('/Profile')} />
           <a 
             href="https://cofhe-docs.fhenix.zone/docs/devdocs/overview" 

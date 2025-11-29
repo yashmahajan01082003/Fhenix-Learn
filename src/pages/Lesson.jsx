@@ -80,6 +80,7 @@ export default function Lesson() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [quizAnswer, setQuizAnswer] = useState(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -159,6 +160,10 @@ export default function Lesson() {
         badges: newBadges
       });
 
+      // Show Celebration
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3000);
+
     } catch (e) {
       console.error("Failed to save progress", e);
     }
@@ -230,6 +235,18 @@ export default function Lesson() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className={`mx-auto p-6 md:p-10 ${currentLesson.type === 'sandbox' ? 'max-w-[1600px]' : 'max-w-4xl'}`}>
+
+          {/* Celebration Overlay */}
+          {showCelebration && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                <div className="relative bg-[#022031] border-2 border-[#0AD9DC] p-8 rounded-2xl text-center animate-in fade-in zoom-in duration-300 shadow-[0_0_50px_rgba(10,217,220,0.5)]">
+                    <div className="text-6xl mb-4">🎉</div>
+                    <h2 className="text-3xl font-bold text-white mb-2">Lesson Completed!</h2>
+                    <p className="text-[#0AD9DC] text-xl font-bold">+50 XP</p>
+                </div>
+            </div>
+          )}
 
           {/* Render Type */}
           {currentLesson.type === 'reading' && (
