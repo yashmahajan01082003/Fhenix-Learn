@@ -7,6 +7,47 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CheckCircle, Play, HelpCircle } from 'lucide-react';
 
+const MarkdownComponents = {
+  h1: ({node, ...props}) => <h1 className="text-3xl font-bold text-white mt-10 mb-6 pb-4 border-b border-white/10" {...props} />,
+  h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-[#0AD9DC] mt-10 mb-4" {...props} />,
+  h3: ({node, ...props}) => <h3 className="text-xl font-bold text-white mt-8 mb-3" {...props} />,
+  p: ({node, ...props}) => <p className="text-slate-300 leading-7 mb-4 text-lg" {...props} />,
+  ul: ({node, ...props}) => <ul className="list-disc list-outside ml-6 mb-6 text-slate-300 space-y-2 marker:text-[#0AD9DC]" {...props} />,
+  ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-6 mb-6 text-slate-300 space-y-2 marker:text-[#0AD9DC]" {...props} />,
+  li: ({node, ...props}) => <li className="pl-2" {...props} />,
+  blockquote: ({node, ...props}) => (
+      <div className="border-l-4 border-[#0AD9DC] bg-[#0AD9DC]/5 p-6 my-8 rounded-r-lg italic text-slate-200 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[#0AD9DC]/10 to-transparent opacity-20 pointer-events-none" />
+          {props.children}
+      </div>
+  ),
+  code: ({node, inline, className, children, ...props}) => {
+      if (inline) {
+          return <code className="bg-[#0AD9DC]/10 text-[#0AD9DC] px-1.5 py-0.5 rounded text-sm font-mono border border-[#0AD9DC]/20" {...props}>{children}</code>;
+      }
+      return (
+          <div className="relative my-8 rounded-xl overflow-hidden bg-[#00101a] border border-white/10 shadow-2xl group">
+              <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
+                  <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                      <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
+                  </div>
+                  <span className="text-xs text-slate-500 font-mono uppercase tracking-wider">code</span>
+              </div>
+              <pre className="p-6 overflow-x-auto text-sm font-mono text-slate-300 leading-relaxed">
+                  <code {...props}>{children}</code>
+              </pre>
+          </div>
+      );
+  },
+  table: ({node, ...props}) => <div className="overflow-x-auto my-8 rounded-lg border border-white/10"><table className="w-full border-collapse text-left" {...props} /></div>,
+  th: ({node, ...props}) => <th className="border-b border-white/20 p-4 text-[#0AD9DC] font-bold text-sm uppercase tracking-wider bg-white/5" {...props} />,
+  td: ({node, ...props}) => <td className="border-b border-white/10 p-4 text-slate-300 text-sm" {...props} />,
+  a: ({node, ...props}) => <a className="text-[#0AD9DC] hover:underline decoration-[#0AD9DC]/50 underline-offset-4 transition-colors font-medium" {...props} />,
+  hr: ({node, ...props}) => <hr className="border-white/10 my-10" {...props} />,
+};
+
 export default function Lesson() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -41,6 +82,16 @@ export default function Lesson() {
             const p = res[0];
             setProgress(p);
             setIsCompleted(p.completed_lessons?.includes(currentLesson.id));
+          } else {
+            // Create progress record if it doesn't exist
+            const newProgress = await base44.entities.UserProgress.create({
+              user_id: currentUser.id,
+              xp: 0,
+              completed_lessons: [],
+              completed_modules: [],
+              badges: []
+            });
+            setProgress(newProgress);
           }
         }
       } catch (e) {
@@ -165,8 +216,8 @@ export default function Lesson() {
           
           {/* Render Type */}
           {currentLesson.type === 'reading' && (
-             <div className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:text-white prose-p:text-slate-300 prose-a:text-[#0AD9DC] prose-code:text-[#0AD9DC] prose-pre:bg-[#022031] prose-pre:border prose-pre:border-white/10">
-               <ReactMarkdown>
+             <div className="max-w-none">
+               <ReactMarkdown components={MarkdownComponents}>
                  {currentLesson.content}
                </ReactMarkdown>
              </div>
@@ -177,8 +228,8 @@ export default function Lesson() {
                   <h1 className="text-3xl font-bold text-white">{currentLesson.title}</h1>
                   <div className="grid md:grid-cols-2 gap-6 h-[500px]">
                       {/* Instructions */}
-                      <div className="bg-[#022031] border border-white/10 rounded-xl p-6 overflow-y-auto prose prose-invert prose-sm">
-                          <ReactMarkdown>{currentLesson.content}</ReactMarkdown>
+                      <div className="bg-[#022031] border border-white/10 rounded-xl p-6 overflow-y-auto">
+                          <ReactMarkdown components={MarkdownComponents}>{currentLesson.content}</ReactMarkdown>
                       </div>
                       
                       {/* Mock Editor */}
