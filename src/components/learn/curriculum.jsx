@@ -104,6 +104,10 @@ None of these allow **persistent computation on encrypted values with full compo
 2. Compute on ciphertext (Validators/Coprocessor).
 3. Decrypt result (Only if authorized).
 4. Validators **never** see plaintext.
+
+\`\`\`visualizer
+// This block renders the EncryptedOperationVisualizer
+\`\`\`
         `
       },
       {
@@ -221,6 +225,13 @@ contract EncryptedCounter {
     // Note: We cannot simply "return" the counter because it is encrypted!
     // We would need a re-encryption/view function to see it.
 }
+\`\`\`
+
+### Compare: Traditional vs Encrypted
+See the difference in syntax side-by-side:
+
+\`\`\`compare
+// This block renders the CodeCompare component
 \`\`\`
 
 ### Frontend Encryption with cofhejs
