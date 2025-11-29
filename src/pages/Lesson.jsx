@@ -241,7 +241,11 @@ export default function Lesson() {
     }
   };
 
-  if (contextLoading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-[#011623] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#0AD9DC]"></div>
+    </div>
+  );
   if (!currentModule || !currentLesson) return <div className="p-20 text-white text-center">Lesson not found</div>;
 
   return (
