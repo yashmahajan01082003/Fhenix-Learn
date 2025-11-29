@@ -229,9 +229,9 @@ export default function Lesson() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-8 md:p-12">
+        <div className={`mx-auto p-6 md:p-10 ${currentLesson.type === 'sandbox' ? 'max-w-[1600px]' : 'max-w-4xl'}`}>
 
-        {/* Render Type */}
+          {/* Render Type */}
           {currentLesson.type === 'reading' && (
              <div className="max-w-none">
                <ReactMarkdown components={MarkdownComponents}>
