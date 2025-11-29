@@ -12,7 +12,10 @@ export default function ModulePathItem({ module, index, progress, isLocked, onCl
   
   const totalLessons = lessons.length;
   const percent = Math.round((completedCount / totalLessons) * 100);
-  const isCompleted = percent === 100;
+  
+  // Use explicit module completion if available, otherwise fallback to percentage
+  const isExplicitlyCompleted = progress?.completedModules?.includes(module.id);
+  const isCompleted = isExplicitlyCompleted || percent === 100;
   const isStarted = percent > 0 && percent < 100;
 
   return (

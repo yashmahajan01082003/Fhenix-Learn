@@ -128,12 +128,16 @@ export default function Lesson() {
             // Sequential Lock Check
             const currentModuleIndex = CURRICULUM.findIndex(m => m.id === currentModule.id);
             const prevModule = currentModuleIndex > 0 ? CURRICULUM[currentModuleIndex - 1] : null;
+            
+            // Unlocked if: It's the first module OR previous module is explicitly marked complete
             const isModuleLocked = prevModule && !p.completed_modules.includes(prevModule.id);
             
             const currentLessonIdx = currentModule.lessons.findIndex(l => l.id === currentLesson.id);
             const prevLesson = currentLessonIdx > 0 ? currentModule.lessons[currentLessonIdx - 1] : null;
-            // Check if previous lesson is unlocked. 
-            const isLessonLocked = prevLesson && !p.completed_lessons.includes(prevLesson.id);
+            
+            // Unlocked if: It's the first lesson OR previous lesson is complete
+            // Also allow if the lesson itself is already complete (revisiting)
+            const isLessonLocked = prevLesson && !p.completed_lessons.includes(prevLesson.id) && !p.completed_lessons.includes(currentLesson.id);
 
             if (isModuleLocked || isLessonLocked) {
                 console.warn("Locked content accessed, redirecting.", { isModuleLocked, isLessonLocked, completed: p.completed_lessons });

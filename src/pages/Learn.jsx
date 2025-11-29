@@ -37,7 +37,33 @@ export default function Learn() {
           
           if (res.length > 0) {
             // Progress exists
-            const currentP = res[0];
+            let currentP = res[0];
+            
+            // SELF-HEALING: Check for missed module completions
+            // Sometimes a user might finish lessons but the module completion event wasn't captured
+            let updatesNeeded = false;
+            const missingModules = [];
+            const currentCompletedModules = currentP.completed_modules || [];
+            const currentCompletedLessons = currentP.completed_lessons || [];
+
+            CURRICULUM.forEach(mod => {
+                const allLessonsDone = mod.lessons.every(l => currentCompletedLessons.includes(l.id));
+                if (allLessonsDone && !currentCompletedModules.includes(mod.id)) {
+                    missingModules.push(mod.id);
+                    updatesNeeded = true;
+                }
+            });
+
+            if (updatesNeeded) {
+                const newCompletedModules = [...currentCompletedModules, ...missingModules];
+                // Calculate new XP if needed (optional, but good for consistency)
+                // For now, just syncing the unlock status is the priority
+                const updated = await base44.entities.UserProgress.update(currentP.id, {
+                    completed_modules: newCompletedModules
+                });
+                currentP = updated;
+            }
+
             setProgress(currentP);
             
             // Background sync display_name if needed
@@ -203,7 +229,10 @@ export default function Learn() {
                   key={module.id}
                   index={index}
                   module={module}
-                  progress={{ completedLessons: progress?.completed_lessons || [] }}
+                  progress={{ 
+                      completedLessons: progress?.completed_lessons || [],
+                      completedModules: progress?.completed_modules || []
+                  }}
                   isLocked={isLocked}
                   onClick={() => handleModuleClick(module)}
                 />
