@@ -1,6 +1,6 @@
 import React from 'react';
 import AppShell from '@/components/layout/AppShell';
-import { UserProgressProvider, useUserProgress } from '@/contexts/UserProgressContext';
+import { UserProgressProvider, useUserProgress } from '@/components/UserProgressContext';
 
 function LayoutContent({ children }) {
   const { user, progress, loading } = useUserProgress();
