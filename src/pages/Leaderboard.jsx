@@ -15,8 +15,28 @@ export default function Leaderboard() {
         setCurrentUser(user);
 
         // Fetch progress sorted by XP descending using backend sort
-        const allProgress = await base44.entities.UserProgress.list('-xp', 50);
-        setLeaders(allProgress);
+        const allProgress = await base44.entities.UserProgress.list('-xp', 100);
+        
+        // Deduplicate: Keep only the highest XP record per user
+        const userMap = new Map();
+        allProgress.forEach(record => {
+            if (!record.user_id) return;
+            
+            if (userMap.has(record.user_id)) {
+                if ((record.xp || 0) > (userMap.get(record.user_id).xp || 0)) {
+                    userMap.set(record.user_id, record);
+                }
+            } else {
+                userMap.set(record.user_id, record);
+            }
+        });
+
+        // Convert back to array and take top 50
+        const uniqueLeaders = Array.from(userMap.values())
+            .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+            .slice(0, 50);
+
+        setLeaders(uniqueLeaders);
       } catch (e) {
         console.error("Failed to fetch leaderboard", e);
       } finally {
