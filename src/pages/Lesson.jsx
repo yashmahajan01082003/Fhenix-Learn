@@ -81,6 +81,7 @@ export default function Lesson() {
   const [loading, setLoading] = useState(true);
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [earnedXP, setEarnedXP] = useState(0);
 
   useEffect(() => {
     const init = async () => {
@@ -171,9 +172,12 @@ export default function Lesson() {
         badges: newBadges
       });
 
-      // Show Celebration
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 3000);
+      // Show Celebration if we earned something
+      if (xpGained > 0) {
+        setEarnedXP(xpGained);
+        setShowCelebration(true);
+        setTimeout(() => setShowCelebration(false), 3000);
+      }
 
     } catch (e) {
       console.error("Failed to save progress", e);
@@ -260,7 +264,7 @@ export default function Lesson() {
                     </button>
                     <div className="text-6xl mb-4">🎉</div>
                     <h2 className="text-3xl font-bold text-white mb-2">Lesson Completed!</h2>
-                    <p className="text-[#0AD9DC] text-xl font-bold">+{50} XP</p>
+                    <p className="text-[#0AD9DC] text-xl font-bold">+{earnedXP} XP</p>
                 </div>
             </div>
           )}
