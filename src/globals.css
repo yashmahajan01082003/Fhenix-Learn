@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Oswald:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 203 94% 7%; /* #011623 */
+    --foreground: 210 40% 98%;
+ 
+    --card: 202 92% 10%; /* #022031 */
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 202 92% 10%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 181 91% 45%; /* #0AD9DC */
+    --primary-foreground: 203 94% 7%;
+ 
+    --secondary: 202 92% 10%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 181 91% 45%;
+    --accent-foreground: 203 94% 7%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 181 91% 45%;
+ 
+    --radius: 0.5rem;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading uppercase tracking-wide;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #011623;
+}
+::-webkit-scrollbar-thumb {
+  background: #0AD9DC;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #08b5b8;
+}
+
+/* Selection */
+::selection {
+  background: rgba(10, 217, 220, 0.3);
+  color: white;
+}
