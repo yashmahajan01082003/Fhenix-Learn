@@ -54,13 +54,15 @@ export default function AppShell({ children, user }) {
              </Button>
             ) : (
               <div className="flex items-center gap-4">
-                <div className="hidden sm:flex flex-col items-end mr-2">
-                  <span className="text-sm font-medium text-white">{user.email.split('@')[0]}</span>
-                  <span className="text-xs text-[#0AD9DC]">Level 1 Explorer</span>
-                </div>
-                <Button variant="ghost" size="icon" className="rounded-full border border-white/10 hover:bg-white/5">
-                   <User className="w-5 h-5 text-slate-300" />
-                </Button>
+                <Link to={createPageUrl('Profile')} className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+                  <div className="hidden sm:flex flex-col items-end mr-2">
+                    <span className="text-sm font-medium text-white group-hover:text-[#0AD9DC] transition-colors">{user.email.split('@')[0]}</span>
+                    <span className="text-xs text-[#0AD9DC]">View Profile</span>
+                  </div>
+                  <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-[#0AD9DC]/50 transition-all">
+                    <User className="w-5 h-5 text-slate-300 group-hover:text-[#0AD9DC]" />
+                  </div>
+                </Link>
                 <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-400 hover:text-white">
                   Sign Out
                 </Button>
