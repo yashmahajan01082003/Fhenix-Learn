@@ -1,134 +1,327 @@
 export const CURRICULUM = [
   {
     id: 'module-1',
-    slug: 'why-privacy-matters',
-    title: 'Why Privacy Matters and What FHE Is',
-    description: 'Understand the foundation: what Fully Homomorphic Encryption (FHE) is, why it matters on Ethereum, and how CoFHE makes it usable.',
+    slug: 'foundations-encrypted-computation',
+    title: 'Module 1: Foundations of Encrypted Computation',
+    description: 'Establish the conceptual base. Understand why Ethereum’s transparency creates privacy limitations, how PETs solve them, and what FHE uniquely unlocks.',
     estimatedHours: 3,
     lessons: [
       {
         id: 'm1-l1',
-        title: 'What Leaks Information in Traditional Contracts',
+        title: 'The Transparency Problem on Ethereum',
         type: 'reading',
         content: `
-# What Leaks Information in Traditional Contracts
+# 1. The Transparency Problem on Ethereum
 
-1. **Storage is readable**
-   - All state variables are accessible via \`eth_getStorageAt\`.
-   - \`private\` in Solidity is only a compiler-level restriction, not a chain-level restriction.
-   - Anyone can read your contract’s storage slots.
+Ethereum was designed for *verifiable* computation, not *private* computation.
+This means every step of a smart contract’s execution is visible to everyone observing the chain—including users, operators, competitors, adversaries, or bots.
 
-2. **Events are broadcast**
-   - Every \`emit\` is permanently visible in transaction logs.
-   - Events reveal user actions, amounts, and outcomes.
-   - Block explorers index and display all events.
+Understanding the transparency problem is core to understanding why FHE matters.
 
-3. **Branching leaks via execution paths**
-   - \`if/else\` statements reveal which condition was true.
-   - Different code paths produce different gas consumption.
-   - State changes indicate which branch executed.
-   - Even failed transactions reveal attempted actions.
+## 1.1 Storage Is Public
 
-4. **Gas usage patterns**
-   - Different operations cost different amounts of gas.
-   - Complex vs simple paths have measurable differences.
-   - Observers can infer what happened based on gas consumed.
+All state variables—public, internal, private—are readable via \`eth_getStorageAt\`.
 
-5. **Timing**
-   - When transactions occur reveals strategic information.
-   - Transaction ordering in blocks is visible.
-   - Mempool visibility exposes pending transactions.
+This reveals:
+* account balances
+* strategy parameters
+* vault positions
+* auction bids
+* game state
+* internal state machines
+* anything stored in contract storage
 
-6. **Transaction ordering**
-   - The sequence of transactions reveals MEV opportunities.
-   - Sandwich attacks exploit visible pending transactions.
+“Private” variables in Solidity only restrict access from other contracts, not from observers.
 
-### Real-World Impact: DEX Example
+## 1.2 Events Are Public
 
-Consider a simple swap function:
+Every emitted event becomes part of the permanent log history:
+* parameters
+* indexed fields
+* metadata
+* transaction context
 
-\`\`\`solidity
-function swap(uint256 amountIn) external {
-    // ...
-}
-\`\`\`
+Events are globally visible and indexed by block explorers. Even if an event carries an encrypted value, its existence, ordering, and correlation leak information.
 
-**Attackers can exploit this via:**
-- Front-running
-- Sandwich attacks
-- MEV extraction
-- Strategy exposure
-- Privacy loss
-- Price manipulation
+## 1.3 Branching Reveals Logic Paths
+
+EVM branching (if/else, require) leaks information because:
+* different branches use different gas
+* different branches write different storage
+* reverts vs success reveal condition results
+* even silent conditions leave side effects
+
+An attacker can infer:
+* whether a condition was true
+* whether a user’s balance exceeded a value
+* whether a check failed
+* whether a threshold was crossed
+
+This makes *conditional privacy* impossible under normal Solidity semantics.
+
+## 1.4 Gas Usage and Timing Leak Secrets
+
+Gas differences reveal which code path executed:
+* expensive vs cheap operations
+* loops with different iterations
+* storage writes vs no writes
+* internal calls
+
+Timing leaks occur through:
+* mempool visibility
+* block inclusion delays
+* the time between successive dependent calls
+
+These leak high-level information about user behavior even when values themselves are absent.
+
+## 1.5 Transactions Reveal Intent
+
+Plaintext calldata exposes:
+* amounts
+* targets
+* routing parameters
+* internal logic
+* user strategies
+
+This is what makes MEV extraction possible.
+
+### Summary
+
+Ethereum’s openness guarantees censorship resistance and verifiability, but it fundamentally prevents:
+* private inputs
+* private logic
+* private state
+* private outputs
+
+To fix this, the ecosystem developed different classes of PETs.
         `
       },
       {
         id: 'm1-l2',
-        title: 'Why Existing Solutions Aren’t Enough',
+        title: 'Overview of PETs (Privacy Enhancing Technologies)',
         type: 'reading',
         content: `
-# Why Existing Solutions Aren’t Enough
+# 2. Overview of PETs
 
-**Private Mempools (Flashbots, MEV-Blocker)**
-These provide some protection against front-running by bypassing the public mempool, but they rely on trust assumptions with builders and do not encrypt state once the transaction is included in a block.
+Before introducing FHE, developers must understand the broader PET landscape—especially how ZK, MPC, TEEs, and FHE differ in their trust assumptions, capabilities, and trade-offs.
 
-**Commit–Reveal Schemes**
-Users commit a hash, then reveal the value later. This prevents front-running during the commit phase but requires a second transaction (bad UX) and eventually reveals the value in plaintext on-chain.
+## 2.1 Zero-Knowledge Proofs (ZK)
 
-**Off-Chain Computation (zkRollups, Optimistic Rollups)**
-Rollups scale execution but typically handle data in plaintext at the sequencer level (or rely on ZK for correctness, not privacy of the state itself). They do not inherently offer computation on encrypted data.
+ZK proves a statement is true without revealing how or why.
 
-**Critical Gap**
-None of these allow **persistent computation on encrypted values with full composability**. You strictly need FHE for that.
+**Capabilities:**
+* prove constraints were satisfied
+* hide intermediate steps
+* verify off-chain computation cheaply
+* build private transaction systems (Zcash, Aztec)
+
+**Limitations:**
+* results are usually plaintext once settled
+* circuits restrict general logic
+* proving is computationally heavy
+* generalized private state is complex
+
+ZK hides proof of computation, not the values being manipulated during execution.
+
+## 2.2 Multi-Party Computation (MPC)
+
+MPC splits a secret across participants who jointly compute a function without revealing their shares.
+
+**Capabilities:**
+* shared-key decryption
+* private collaborative computation
+* threshold signing
+
+**Limitations:**
+* coordination overhead
+* requires online participants
+* complex to scale
+* stateful MPC is difficult
+
+MPC is excellent for distributed trust, but not ideal for general-purpose smart contract state.
+
+## 2.3 Trusted Execution Environments (TEEs)
+
+TEEs rely on secure hardware enclaves (e.g., SGX) to perform computation privately.
+
+**Capabilities:**
+* fast private compute
+* low overhead
+* good for certain enterprise environments
+
+**Limitations:**
+* centralization
+* side-channel attacks
+* opaque trust dependencies
+* poor decentralization properties
+
+Good for regulated environments; not ideal for trust-minimized blockchains.
+
+## 2.4 Fully Homomorphic Encryption (FHE)
+
+FHE allows computation directly on encrypted data without decrypting it.
+
+**Capabilities:**
+* compute on encrypted inputs
+* maintain encrypted state
+* preserve privacy end-to-end
+* fully general logic (add, multiply, compare, bitwise, etc.)
+* only decrypt when explicitly authorized
+
+**Limitations:**
+* native FHE is too slow and expensive to run on-chain
+* ciphertexts are large
+* operations require specialized compute
+
+This is where CoFHE enters.
+
+### Summary
+
+Each PET solves a different slice of the privacy problem.
+Only FHE supports general-purpose encrypted compute without revealing intermediate or final values.
         `
       },
       {
         id: 'm1-l3',
-        title: 'The FHE Value Proposition',
+        title: 'Introduction to Fully Homomorphic Encryption',
         type: 'reading',
         content: `
-# The FHE Value Proposition
+# 3. Introduction to Fully Homomorphic Encryption
 
-**What FHE Enables**
-- **Compute on Encrypted Data:** Perform additions, multiplications, and logic on ciphertexts without ever decrypting them.
-- **Encrypted Lifecycle:** Data remains encrypted from the user's wallet, through the smart contract logic, and back to storage.
-- **Composability:** Contracts can operate on encrypted data from other contracts (permissions permitting).
+Fully Homomorphic Encryption (FHE) is a cryptographic primitive that allows arbitrary computation on encrypted data.
+This is the conceptual core that powers encrypted smart contracts.
 
-**Contrast**
-- **Traditional Computation:** Plaintext → [Compute] → Plaintext
-- **FHE-based:** Encrypted → [Compute on encrypted] → Encrypted → [Decrypt only if needed]
+## 3.1 What FHE Actually Does
 
-## What Is FHE?
-1. Encrypt input (Client-side).
-2. Compute on ciphertext (Validators/Coprocessor).
-3. Decrypt result (Only if authorized).
-4. Validators **never** see plaintext.
+**Traditional encryption:**
+\`Encrypt → [decrypt] → compute → [encrypt]\`
 
-\`\`\`visualizer
-// This block renders the EncryptedOperationVisualizer
-\`\`\`
+**FHE:**
+\`Encrypt → compute on ciphertext → decrypt result at the end\`
+
+This means:
+* you never expose plaintext during execution
+* computation is indistinguishable to observers
+* encrypted results can be used as new inputs
+* only authorized parties can decrypt
+
+## 3.2 How FHE Works in CoFHE
+
+Native FHE is too heavy to run on-chain, so Fhenix implements a hybrid architecture:
+* encrypted inputs come from users
+* smart contracts operate on **ciphertext handles** using \`euintX\`, \`FHE.add\`, \`FHE.mul\`, etc.
+* contracts emit **operation descriptions**
+* CoFHE’s off-chain FHEOS performs the actual homomorphic computation
+* results are posted back as new handles
+* users decrypt via threshold MPC when needed
+
+This gives Solidity developers:
+* encrypted state variables
+* encrypted math
+* encrypted comparisons
+* encrypted conditional logic via \`FHE.select()\`
+* async decryption
+* user-controlled access control
+
+FHE becomes a library-level abstraction built into the Solidity type system (\`euint8\`, \`euint16\`, \`euint32\`, etc.).
+
+## 3.3 Why FHE Enables Private On-Chain Logic
+
+Because every transformation is performed on ciphertexts:
+* no node or validator sees plaintext
+* storage only contains ciphertext handles
+* events only refer to encrypted handles
+* branching is replaced with oblivious selection
+* outputs remain encrypted until deliberately unsealed
+
+This is the only model that allows both:
+1. **Private state**
+2. **Private logic**
+3. **Private output**
+4. **Full composability with the EVM**
+
+No other PET achieves all four simultaneously.
         `
       },
       {
         id: 'm1-l4',
-        title: 'FHE vs Other PETs & Ecosystem',
+        title: 'FHE Use Cases on Ethereum',
         type: 'reading',
         content: `
-# FHE vs Other PETs (Privacy Enhancing Technologies)
+# 4. FHE Use Cases on Ethereum
 
-| Technology | Primary capability | Short Version |
-|------------|-------------------|---------------|
-| **ZK (Zero Knowledge)** | Proving correctness | Proves something is true without revealing it. |
-| **MPC (Multi-Party Computation)** | Distributed computation | Shares secrets across parties to compute jointly. |
-| **FHE (Fully Homomorphic Encryption)** | Blind computation | Allows Ethereum to compute without knowing the data. |
-| **TEE (Trusted Execution Environment)** | Hardware isolation | Relies on secure hardware (Intel SGX) rather than math. |
+This section covers the real problems FHE solves and why developers use it instead of ZK or MPC for certain applications.
+The unifying theme: **FHE enables shared private state and private logic inside EVM-compatible smart contracts.**
 
-# FHE Ecosystem on Ethereum
-- **Fhenix:** L2 Coprocessor for FHE on Ethereum.
-- **Zama:** Provides the fhEVM cryptographic library.
-- **Sunscreen:** Compiler toolchain.
-- **Inco:** FHE Layer 1.
-- **Encifher:** Tooling and wallets.
+## 4.1 Confidential DeFi
+
+FHE enables DeFi systems where:
+* users submit encrypted balances
+* strategies run on encrypted data
+* no frontrunning is possible
+* order flow becomes private
+* vault logic can operate privately
+* LP positions remain secret
+
+## 4.2 Private Auctions and Bidding
+
+FHE supports full sealed-bid protocols without commit–reveal:
+* bids are encrypted
+* comparisons happen on ciphertexts
+* winner and winning bid remain encrypted until authorized
+* no leakage during bidding or evaluation
+* no need for two-phase commit
+
+## 4.3 Encrypted Games
+
+Games require hidden state. FHE supports:
+* hidden moves
+* partial information games
+* deterministic encrypted randomness
+* encrypted scoring
+* turn-based or real-time logic
+
+## 4.4 Private Voting
+
+With FHE:
+* votes are encrypted
+* the tallying algorithm runs on encrypted values
+* no intermediate results leak
+* individual votes never exposed
+* final result can be decrypted collectively
+
+## 4.5 Encrypted Analytics
+
+Applications can maintain encrypted global aggregates:
+* average scores
+* risk metrics
+* leaderboards
+* KPIs
+* financial ratios
+
+All updated without ever revealing individual contributions.
+
+## 4.6 Privacy-Preserving Identity and Reputation
+
+You can compute logic over encrypted identity attributes:
+* prove age comparisons
+* compute trust scores
+* evaluate risk
+* check thresholds
+* aggregate behavior
+* maintain encrypted reputation
+
+All without revealing underlying traits.
+
+## 4.7 Enterprise Confidential Computation
+
+FHE supports:
+* encrypted supply chain data
+* encrypted pricing models
+* cross-organizational computation without data sharing
+* privacy-preserving compliance logic
+
+Because the data never becomes plaintext, even when processed by contracts.
         `
       },
       {

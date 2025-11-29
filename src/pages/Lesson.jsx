@@ -337,16 +337,12 @@ export default function Lesson() {
                     <Button 
                       onClick={handleNext}
                       disabled={!isCompleted} 
-                      className={`bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className={`bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold transition-all duration-500 
+                        ${!isCompleted ? 'opacity-0 pointer-events-none transform translate-x-4' : 'opacity-100 transform translate-x-0'}`}
                     >
                         {currentLessonIndex === currentModule.lessons.length - 1 ? 'Next Module' : 'Next Lesson'} 
-                        {isCompleted ? <ChevronRight className="w-4 h-4 ml-2" /> : <Lock className="w-3.5 h-3.5 ml-2 opacity-70" />}
+                        <ChevronRight className="w-4 h-4 ml-2" />
                     </Button>
-                    {!isCompleted && (
-                      <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-[#011623] border border-white/10 rounded-lg text-xs text-slate-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        Complete this lesson to unlock next
-                      </div>
-                    )}
                   </div>
               </div>
           </div>
