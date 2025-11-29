@@ -16,7 +16,7 @@ export function UserProgressProvider({ children }) {
             
             if (currentUser) {
                 // Fetch ALL progress records to handle potential duplicates
-                const res = await base44.entities.UserProgress.list({ user_id: currentUser.id });
+                const res = await base44.entities.UserProgress.filter({ user_id: currentUser.id });
                 
                 let currentP;
                 if (res.length > 0) {
