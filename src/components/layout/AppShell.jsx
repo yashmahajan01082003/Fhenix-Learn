@@ -31,15 +31,16 @@ export default function AppShell({ children, user }) {
 
           {/* Center: Links */}
           <nav className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
-            <NavLink to={createPageUrl('Learn')} label="Curriculum" active={isActive('/Learn')} />
-            <a 
-              href="https://cofhe-docs.fhenix.zone/docs/devdocs/overview" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-1.5 text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-2"
-            >
-              Docs <ArrowRight className="w-3 h-3 -rotate-45" />
-            </a>
+          <NavLink to={createPageUrl('Learn')} label="Curriculum" active={isActive('/Learn')} />
+          <NavLink to={createPageUrl('Profile')} label="My Profile" active={isActive('/Profile')} />
+          <a 
+            href="https://cofhe-docs.fhenix.zone/docs/devdocs/overview" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-1.5 text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-2"
+          >
+            Docs <ArrowRight className="w-3 h-3 -rotate-45" />
+          </a>
           </nav>
 
           {/* Right: Actions */}
