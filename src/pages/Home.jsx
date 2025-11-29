@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, Code2, Zap, ArrowRight, Terminal } from 'lucide-react';
@@ -7,10 +7,19 @@ import { motion } from 'framer-motion';
 import { CURRICULUM } from '@/components/learn/curriculum';
 import ModuleCard from '@/components/modules/ModuleCard';
 import PlaygroundCard from '@/components/learn/PlaygroundCard';
+import { useUserProgress } from '@/components/UserProgressContext';
 
 export default function Home() {
+  const navigate = useNavigate();
+  const { progress } = useUserProgress();
+
   // Only show first 3 modules as preview
   const previewModules = CURRICULUM.slice(0, 3);
+
+  const handleModuleClick = (module) => {
+    const firstLesson = module.lessons[0];
+    navigate(`${createPageUrl('Lesson')}?module=${module.slug}&lesson=${firstLesson.id}`);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -112,16 +121,22 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {previewModules.map((module) => (
-               <div key={module.id} className="h-[380px]">
-                 <ModuleCard 
-                  module={module} 
-                  progress={{ completedLessons: [] }} // Empty for landing
-                  isLocked={false}
-                  onClick={() => {}} // No-op on landing, link wraps it? No, UI spec says buttons.
-                 />
-               </div>
-            ))}
+            {previewModules.map((module, index) => {
+               // Logic to determine lock status (same as in Learn.js)
+               const prevModule = CURRICULUM[index - 1];
+               const isLocked = index > 0 && !progress?.completed_modules?.includes(prevModule.id);
+
+               return (
+                 <div key={module.id} className="h-[380px]">
+                   <ModuleCard 
+                    module={module} 
+                    progress={{ completedLessons: progress?.completed_lessons || [] }}
+                    isLocked={isLocked}
+                    onClick={() => handleModuleClick(module)}
+                   />
+                 </div>
+               );
+            })}
           </div>
         </div>
       </section>
