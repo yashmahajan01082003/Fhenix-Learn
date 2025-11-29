@@ -152,21 +152,7 @@ export default function Profile() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {modLessons.map((lesson, idx) => {
-                                            const lessonDone = completedLessonIds.includes(lesson.id);
-                                            return (
-                                                <div key={lesson.id} className={`flex items-center gap-3 text-xs p-2 rounded ${lessonDone ? 'bg-green-500/5 text-green-400' : 'text-slate-500'}`}>
-                                                    {lessonDone ? (
-                                                        <CheckCircle className="w-3 h-3 shrink-0" />
-                                                    ) : (
-                                                        <div className="w-3 h-3 rounded-full border border-slate-600 shrink-0" />
-                                                    )}
-                                                    <span className="truncate">{idx + 1}. {lesson.title}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                    {/* Detailed lesson list hidden as requested */}
                                 </div>
                             );
                         })}

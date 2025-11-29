@@ -126,11 +126,16 @@ export default function Lesson() {
 
     // Prepare updates
     let newCompletedLessons = [...(progress.completed_lessons || [])];
+    let newXP = progress.xp || 0;
+    let xpGained = 0;
+
+    // Only award for new completions
     if (!newCompletedLessons.includes(currentLesson.id)) {
       newCompletedLessons.push(currentLesson.id);
+      newXP += 50; // 50 XP per challenge/lesson
+      xpGained += 50;
     }
 
-    let newXP = (progress.xp || 0) + 50; // 50 XP per challenge/lesson
     let newCompletedModules = [...(progress.completed_modules || [])];
     let newBadges = [...(progress.badges || [])];
 
@@ -141,8 +146,13 @@ export default function Lesson() {
     if (allFinished && !newCompletedModules.includes(currentModule.id)) {
       newCompletedModules.push(currentModule.id);
       newXP += 100; // Bonus for module
+      xpGained += 100;
       newBadges.push(currentModule.id); // Badge ID matches module ID
     }
+
+    // If no new XP gained, we might still want to update badges/modules if they were somehow missed, 
+    // but primarily we want to avoid calling update if nothing changed? 
+    // For now, we always update to be safe, but we rely on the checks above for XP logic.
 
     try {
       await base44.entities.UserProgress.update(progress.id, {
@@ -250,7 +260,7 @@ export default function Lesson() {
                     </button>
                     <div className="text-6xl mb-4">🎉</div>
                     <h2 className="text-3xl font-bold text-white mb-2">Lesson Completed!</h2>
-                    <p className="text-[#0AD9DC] text-xl font-bold">+50 XP</p>
+                    <p className="text-[#0AD9DC] text-xl font-bold">+{50} XP</p>
                 </div>
             </div>
           )}
