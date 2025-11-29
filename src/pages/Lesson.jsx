@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { CURRICULUM } from '@/components/learn/curriculum';
 import ReactMarkdown from 'react-markdown';
