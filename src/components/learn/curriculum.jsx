@@ -1,4 +1,3 @@
-
 export const CURRICULUM = [
   {
     id: 'module-1',
