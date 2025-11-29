@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { CURRICULUM } from '@/components/learn/curriculum';
@@ -12,6 +12,7 @@ import { Trophy, Zap, Terminal, PlayCircle } from 'lucide-react';
 
 export default function Learn() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,21 +23,28 @@ export default function Learn() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         if (currentUser) {
-          // Fetch progress
+          // Prioritize passed state to avoid stale DB reads
+          if (location.state?.progress && location.state.progress.user_id === currentUser.id) {
+              setProgress(location.state.progress);
+              setLoading(false);
+              return;
+          }
+
+          // Fetch progress from DB
           const res = await base44.entities.UserProgress.list({
             user_id: currentUser.id
           });
           
           if (res.length > 0) {
-            // Progress exists, check/sync display_name
+            // Progress exists
             const currentP = res[0];
+            setProgress(currentP);
+            
+            // Background sync display_name if needed
             if (!currentP.display_name && currentUser.email) {
-                const updated = await base44.entities.UserProgress.update(currentP.id, {
+                base44.entities.UserProgress.update(currentP.id, {
                     display_name: currentUser.email.split('@')[0]
                 });
-                setProgress(updated);
-            } else {
-                setProgress(currentP);
             }
           } else {
             // Initialize progress if none exists
@@ -58,7 +66,7 @@ export default function Learn() {
       }
     };
     init();
-  }, []);
+  }, [location.state]);
 
   const handleModuleClick = (module) => {
     // Find the first incomplete lesson or the first lesson

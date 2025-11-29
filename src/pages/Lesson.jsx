@@ -205,8 +205,9 @@ export default function Lesson() {
         badges: newBadges
       });
 
-      // Show Celebration if we earned something
-      if (xpGained > 0) {
+      // Show Celebration ONLY if we finished the module (last lesson)
+      const isLastLesson = currentLessonIndex === currentModule.lessons.length - 1;
+      if (xpGained > 0 && isLastLesson) {
         setEarnedXP(xpGained);
         setShowCelebration(true);
         setTimeout(() => setShowCelebration(false), 3000);
@@ -231,7 +232,7 @@ export default function Lesson() {
             const nextModule = CURRICULUM[currentModuleIndex + 1];
             navigate(`${createPageUrl('Lesson')}?module=${nextModule.slug}&lesson=${nextModule.lessons[0].id}`, { state });
         } else {
-            navigate(createPageUrl('Learn'));
+            navigate(createPageUrl('Learn'), { state: { progress } });
         }
     }
   };
