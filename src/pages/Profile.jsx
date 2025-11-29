@@ -3,7 +3,7 @@ import { CURRICULUM } from '@/components/learn/curriculum';
 import { BADGES } from '@/components/learn/badges';
 import { motion } from 'framer-motion';
 import { Trophy, Terminal, Award, Lock, BookOpen, CheckCircle, Clock } from 'lucide-react';
-import { useUserProgress } from '@/contexts/UserProgressContext';
+import { useUserProgress } from '@/components/UserProgressContext';
 
 export default function Profile() {
   const { user, progress, loading } = useUserProgress();
