@@ -5,9 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { CURRICULUM } from '@/components/learn/curriculum';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, CheckCircle, Play, Code, HelpCircle } from 'lucide-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ChevronLeft, ChevronRight, CheckCircle, Play, HelpCircle } from 'lucide-react';
 
 export default function Lesson() {
   const navigate = useNavigate();
@@ -97,8 +95,6 @@ export default function Lesson() {
         badges: newBadges
       });
 
-      // If it's the last lesson, show completion state or navigate
-      // Or just let user click Next
     } catch (e) {
       console.error("Failed to save progress", e);
     }
@@ -170,27 +166,7 @@ export default function Lesson() {
           {/* Render Type */}
           {currentLesson.type === 'reading' && (
              <div className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:text-white prose-p:text-slate-300 prose-a:text-[#0AD9DC] prose-code:text-[#0AD9DC] prose-pre:bg-[#022031] prose-pre:border prose-pre:border-white/10">
-               <ReactMarkdown
-                 components={{
-                   code({node, inline, className, children, ...props}) {
-                     const match = /language-(\w+)/.exec(className || '')
-                     return !inline && match ? (
-                       <SyntaxHighlighter
-                         {...props}
-                         children={String(children).replace(/\n$/, '')}
-                         style={atomDark}
-                         language={match[1]}
-                         PreTag="div"
-                         customStyle={{ background: 'transparent' }}
-                       />
-                     ) : (
-                       <code {...props} className={className}>
-                         {children}
-                       </code>
-                     )
-                   }
-                 }}
-               >
+               <ReactMarkdown>
                  {currentLesson.content}
                </ReactMarkdown>
              </div>
