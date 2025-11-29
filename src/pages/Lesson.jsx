@@ -25,7 +25,8 @@ const MarkdownComponents = {
   ),
   code: ({node, inline, className, children, ...props}) => {
       if (inline) {
-          return <code className="bg-[#0AD9DC]/10 text-[#0AD9DC] px-1.5 py-0.5 rounded text-sm font-mono border border-[#0AD9DC]/20" {...props}>{children}</code>;
+          // Use a simpler, non-boxy style for inline code
+          return <code className="text-[#0AD9DC] text-[0.9em] font-mono font-medium bg-transparent" {...props}>{children}</code>;
       }
       const match = /language-(\w+)/.exec(className || '');
       const lang = match ? match[1] : '';
