@@ -300,11 +300,11 @@ Encryption happens **client-side** so the network never sees plaintext.
   },
   {
     id: 'module-4',
-    slug: 'control-flow',
-    title: 'Control Flow, Design Patterns, and Leak Avoidance',
-    description: 'Learning to code without if/else statements. Mastering Oblivious Execution.',
+    slug: 'mental-models',
+    title: 'Mental Models: Working With Encrypted Data',
+    description: 'Master the mindset shift required for FHE: Oblivious execution, handling async decryption, and avoiding leaks.',
     difficulty: 'Advanced',
-    estimatedHours: 5,
+    estimatedHours: 6,
     lessons: [
       {
         id: 'm4-l1',
@@ -352,6 +352,27 @@ euint32 newBalance = FHE.select(isAffordable, FHE.sub(balance, amount), balance)
 - **Select-based fail states:** Instead of reverting, perform a "no-op" state update if the condition fails (like the balance example above).
 - **Min/Max Clamping:** Use \`FHE.min\` and \`FHE.max\` to keep values within bounds without branching.
         `
+      },
+      {
+        id: 'm4-l3',
+        title: 'Async Decryption Model',
+        type: 'reading',
+        content: `
+# Async Decryption Model
+
+Decryption to plaintext is asynchronous because it requires coordination from the threshold network.
+
+**Step 1: Request Decryption**
+\`\`\`solidity
+uint256 requestId = FHE.reqDecrypt(encryptedValue, callbackCallback);
+\`\`\`
+
+**Step 2: Callback**
+The coprocessor waits for the threshold network to decrypt, then calls your callback function with the plaintext value.
+
+**Security:**
+Only the callback function receives the plaintext. This allows you to trigger logic based on hidden values (e.g., "Did the bid win?").
+        `
       }
     ]
   },
@@ -390,37 +411,6 @@ To view your encrypted balance:
   },
   {
     id: 'module-6',
-    slug: 'async-decryption',
-    title: 'Asynchronous Decryption',
-    description: 'How to safely decrypt data back to plaintext using async flows.',
-    difficulty: 'Advanced',
-    estimatedHours: 3,
-    lessons: [
-      {
-        id: 'm6-l1',
-        title: 'Async Decryption Model',
-        type: 'reading',
-        content: `
-# Async Decryption Model
-
-Decryption to plaintext is asynchronous because it requires coordination from the threshold network.
-
-**Step 1: Request Decryption**
-\`\`\`solidity
-uint256 requestId = FHE.reqDecrypt(encryptedValue, callbackCallback);
-\`\`\`
-
-**Step 2: Callback**
-The coprocessor waits for the threshold network to decrypt, then calls your callback function with the plaintext value.
-
-**Security:**
-Only the callback function receives the plaintext. This allows you to trigger logic based on hidden values (e.g., "Did the bid win?").
-        `
-      }
-    ]
-  },
-  {
-    id: 'module-7',
     slug: 'putting-it-together',
     title: 'Putting It All Together',
     description: 'Capstone module. Final checklists and building a complete DApp.',
@@ -428,7 +418,7 @@ Only the callback function receives the plaintext. This allows you to trigger lo
     estimatedHours: 2,
     lessons: [
       {
-        id: 'm7-l1',
+        id: 'm6-l1',
         title: 'FHE-Safe Design Checklist',
         type: 'reading',
         content: `
