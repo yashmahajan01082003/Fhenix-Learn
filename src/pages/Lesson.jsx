@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import { CURRICULUM } from '@/components/learn/curriculum';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CheckCircle, Play, HelpCircle, Lock } from 'lucide-react';
 import EncryptedOperationVisualizer from '@/components/learn/interactive/EncryptedOperationVisualizer';
 import CodeCompare from '@/components/learn/interactive/CodeCompare';
+import { useUserProgress } from '@/components/UserProgressContext';
 
 const MarkdownComponents = {
   h1: ({node, ...props}) => <h1 className="text-3xl font-bold text-white mt-10 mb-6 pb-4 border-b border-white/10" {...props} />,

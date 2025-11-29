@@ -8,28 +8,24 @@ import BadgeStrip from '@/components/learn/BadgeStrip';
 import PlaygroundCard from '@/components/learn/PlaygroundCard';
 import { Button } from '@/components/ui/button';
 import { Trophy, Zap, Terminal, PlayCircle } from 'lucide-react';
-import { useUserProgress } from '@/contexts/UserProgressContext';
+import { useUserProgress } from '@/components/UserProgressContext';
 
 export default function Learn() {
   const navigate = useNavigate();
   const { user, progress, loading } = useUserProgress();
 
   const handleModuleClick = (module) => {
-    // Find the first incomplete lesson or the first lesson
     const firstLesson = module.lessons[0];
-    // In a real app, we'd jump to last accessed lesson.
     navigate(`${createPageUrl('Lesson')}?module=${module.slug}&lesson=${firstLesson.id}`);
   };
 
-  if (loading) return null; // Layout handles loading
+  if (loading) return null;
 
-  // Calculate Stats
   const xp = progress?.xp || 0;
   const completedModulesCount = progress?.completed_modules?.length || 0;
   const totalModules = CURRICULUM.length;
   const progressPercent = Math.round((completedModulesCount / totalModules) * 100);
 
-  // Calculate Next Lesson (Resume Logic)
   let nextLessonUrl = null;
   let nextLessonTitle = "Start Learning";
   
@@ -37,7 +33,6 @@ export default function Learn() {
     const completedLessons = progress?.completed_lessons || [];
     const incompleteLesson = module.lessons.find(l => !completedLessons.includes(l.id));
     
-    // Check if module is locked (previous module not complete)
     const moduleIndex = CURRICULUM.findIndex(m => m.id === module.id);
     const prevModule = CURRICULUM[moduleIndex - 1];
     const isLocked = moduleIndex > 0 && !progress?.completed_modules?.includes(prevModule.id);
@@ -49,15 +44,12 @@ export default function Learn() {
     }
   }
   
-  // Fallback for brand new user or all complete
   if (!nextLessonUrl && CURRICULUM.length > 0) {
-      // If nothing incomplete found, check if user is brand new (no progress) or finished everything
       if (!progress || progress.completed_lessons.length === 0) {
           const firstMod = CURRICULUM[0];
           nextLessonUrl = `${createPageUrl('Lesson')}?module=${firstMod.slug}&lesson=${firstMod.lessons[0].id}`;
           nextLessonTitle = "Start: " + firstMod.lessons[0].title;
       } else {
-          // All done? Point to the last lesson of last module or just stay on dashboard
            const lastMod = CURRICULUM[CURRICULUM.length - 1];
            const lastLesson = lastMod.lessons[lastMod.lessons.length - 1];
            nextLessonUrl = `${createPageUrl('Lesson')}?module=${lastMod.slug}&lesson=${lastLesson.id}`;
