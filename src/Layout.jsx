@@ -1,19 +1,39 @@
-import React from 'react';
-import { AppShell } from '@/components/layout/AppShell'; // Assuming we'll use the component directly in pages, but usually pages use Layout.js.
-// Actually in Base44, Layout.js wraps pages. I'll check Layout.js implementation.
+import React, { useState, useEffect } from 'react';
+import AppShell from '@/components/layout/AppShell';
+import { base44 } from '@/api/base44Client';
+import { useLocation } from 'react-router-dom';
 
 export default function Layout({ children }) {
-  // We need to see if the child is a specific page that needs specific layout or if we wrap all.
-  // The prompt requested AppShell to be used.
-  // I'll assume Layout.js is the global wrapper.
-  
-  // However, I need to access the user to pass to AppShell.
-  // I can use base44.auth.me() hook inside AppShell, or fetch here.
-  // Better to fetch inside AppShell or a context.
-  
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (e) {
+        // Not logged in
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkUser();
+  }, [location.pathname]); // Re-check on navigation
+
+  if (loading) {
+    return (
+        <div className="min-h-screen bg-[#011623] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#0AD9DC]"></div>
+        </div>
+    );
+  }
+
   return (
-    <div className="antialiased">
-        {children}
-    </div>
+    <AppShell user={user}>
+      {children}
+    </AppShell>
   );
 }
