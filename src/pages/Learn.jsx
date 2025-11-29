@@ -1,0 +1,168 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { base44 } from '@/api/base44Client';
+import { CURRICULUM } from '@/components/learn/curriculum';
+import ModuleCard from '@/components/modules/ModuleCard';
+import BadgeStrip from '@/components/learn/BadgeStrip';
+import PlaygroundCard from '@/components/learn/PlaygroundCard';
+import { Button } from '@/components/ui/button';
+import { Trophy, Zap, Terminal } from 'lucide-react';
+
+export default function Learn() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [progress, setProgress] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        if (currentUser) {
+          // Fetch progress
+          const res = await base44.entities.UserProgress.list({
+            user_id: currentUser.id
+          });
+          
+          if (res.length > 0) {
+            setProgress(res[0]);
+          } else {
+            // Initialize progress if none exists
+            const newProgress = await base44.entities.UserProgress.create({
+              user_id: currentUser.id,
+              xp: 0,
+              completed_lessons: [],
+              completed_modules: [],
+              badges: []
+            });
+            setProgress(newProgress);
+          }
+        }
+      } catch (e) {
+        console.error("Auth/Progress error", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  const handleModuleClick = (module) => {
+    // Find the first incomplete lesson or the first lesson
+    const firstLesson = module.lessons[0];
+    // In a real app, we'd jump to last accessed lesson.
+    navigate(`${createPageUrl('Lesson')}?module=${module.slug}&lesson=${firstLesson.id}`);
+  };
+
+  if (loading) return <div className="min-h-screen bg-[#011623] flex items-center justify-center text-[#0AD9DC]">Loading...</div>;
+
+  // Calculate Stats
+  const xp = progress?.xp || 0;
+  const completedModulesCount = progress?.completed_modules?.length || 0;
+  const totalModules = CURRICULUM.length;
+  const progressPercent = Math.round((completedModulesCount / totalModules) * 100);
+
+  return (
+    <div className="min-h-screen bg-[#011623] pb-20">
+      
+      {/* Dashboard Header */}
+      <div className="bg-[#022031] border-b border-white/5 pt-10 pb-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0AD9DC] to-blue-600 flex items-center justify-center text-[#011623] font-bold text-2xl">
+                  {user?.email?.[0].toUpperCase() || '?'}
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    Welcome back, <span className="text-[#0AD9DC]">{user?.email?.split('@')[0] || 'Explorer'}</span>
+                  </h1>
+                  <div className="flex items-center gap-4 mt-2 text-slate-400 text-sm">
+                    <span className="flex items-center gap-1">
+                      <Trophy className="w-4 h-4 text-amber-400" /> {xp} XP
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Terminal className="w-4 h-4 text-purple-400" /> Level {Math.floor(xp / 1000) + 1}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Global Progress */}
+              <div className="w-full max-w-md">
+                <div className="flex justify-between text-xs font-medium text-slate-400 mb-2">
+                  <span>Overall Progress</span>
+                  <span>{progressPercent}%</span>
+                </div>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#0AD9DC] transition-all duration-1000" 
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Badges Widget */}
+            <div className="bg-[#011623]/50 p-4 rounded-xl border border-white/5">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Recent Badges</p>
+              <BadgeStrip earnedBadges={progress?.badges || []} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 -mt-8">
+        
+        {/* Modules Grid */}
+        <div className="grid gap-6">
+          <h2 className="text-2xl font-bold text-white mt-8 mb-4">Learning Path</h2>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {CURRICULUM.map((module, index) => {
+              // Module Locking Logic
+              // Module 0 is always unlocked.
+              // Module N is unlocked if Module N-1 is in completed_modules
+              const prevModule = CURRICULUM[index - 1];
+              const isLocked = index > 0 && !progress?.completed_modules?.includes(prevModule.id);
+
+              return (
+                <ModuleCard
+                  key={module.id}
+                  module={module}
+                  progress={{ completedLessons: progress?.completed_lessons || [] }}
+                  isLocked={isLocked}
+                  onClick={() => handleModuleClick(module)}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Playgrounds Section */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-white mb-6">Sandboxes & Tools</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <PlaygroundCard 
+              title="Encryption Playground" 
+              description="Experiment with client-side encryption using cofhejs before sending to chain."
+            />
+            <PlaygroundCard 
+              title="FHE Operations" 
+              description="Test basic homomorphic operations like add, sub, and bitwise logic."
+            />
+             <PlaygroundCard 
+              title="Permission Generator" 
+              description="Generate and sign access permits to view encrypted state."
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
