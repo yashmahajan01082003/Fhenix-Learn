@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Code2, Play, ArrowUpRight, Terminal } from 'lucide-react';
+import { ArrowUpRight, Terminal } from 'lucide-react';
 
 export default function PlaygroundCard({ title, description }) {
   return (

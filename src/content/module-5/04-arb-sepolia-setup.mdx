@@ -1,0 +1,56 @@
+---
+title: "Arbitrum Sepolia Setup"
+type: "reading"
+---
+
+# Arbitrum Sepolia Setup
+
+This curriculum prioritizes Arbitrum Sepolia for deployment.
+
+## Chain Config
+
+`@cofhe/sdk/chains` includes `chains.arbSepolia` with CoFHE, verifier, and threshold network URLs preconfigured:
+
+```ts
+import { chains } from "@cofhe/sdk/chains";
+
+const config = createCofheConfig({
+  supportedChains: [chains.arbSepolia],
+});
+```
+
+## Hardhat Config
+
+Add Arbitrum Sepolia to your Hardhat config:
+
+```ts
+arbitrumSepolia: {
+  url: process.env.ARB_SEPOLIA_RPC || "https://sepolia-rollup.arbitrum.io/rpc",
+  chainId: 421614,
+  accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+},
+```
+
+## Dependencies
+
+- `@cofhe/sdk`
+- `@cofhe/abi`
+- `viem`
+- `wagmi` (if using)
+
+## Prerequisites
+
+- Wallet with Arb Sepolia ETH
+- Node 18+, pnpm or npm
+
+## Compatibility Check (Required)
+
+Before debugging app logic, confirm your stack matches the current compatibility matrix in official docs:
+
+- `@fhenixprotocol/cofhe-contracts`
+- `@cofhe/sdk`
+- `@cofhe/hardhat-plugin`
+- `@cofhe/mock-contracts`
+- Target network support (`Arbitrum Sepolia`, `Sepolia`, or `Base Sepolia`)
+
+If versions are misaligned, fix compatibility first. Many runtime errors are version/config mismatches, not contract bugs.

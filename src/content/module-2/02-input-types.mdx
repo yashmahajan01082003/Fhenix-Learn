@@ -1,0 +1,45 @@
+---
+title: "2.2 Input Types"
+type: "reading"
+---
+
+# 2.2 Input Types
+
+When users send encrypted data to a contract, the data arrives wrapped in **input types**.
+
+These wrappers ensure:
+1. Safety
+2. Correct shape
+3. Validation
+4. Compatibility with `FHE.sol`
+
+The input types directly match the encrypted compute types: `InEuint8`, `InEuint16`, `InEuint32`, `InEuint64`, and `InEuint128`.
+
+## Why encrypted inputs are encapsulated
+
+An encrypted input cannot be assumed valid until it is converted. The wrapper holds the ciphertext from the user, ensures it’s well-formed, and prevents unsafe direct usage.
+
+## Converting input → compute
+
+To use an encrypted input inside the contract, you must convert it using the correct `FHE.asEuintX()` function.
+
+```solidity
+function submit(InEuint16 memory input) public {
+  // Transform validated input wrapper into compute type
+  euint16 value = FHE.asEuint16(input);
+}
+```
+
+**Important:** This does not decrypt. It simply transforms a validated input wrapper into the compute type used for FHE operations.
+
+## Critical rule: never store `InE*` in state
+
+Do **not** store `InE*` wrappers directly in contract state. `InE*` types include extra metadata for input validation and are not intended as long-lived state values.
+
+Always convert first:
+
+```solidity
+euint16 value = FHE.asEuint16(input);
+```
+
+Then store or operate on the resulting `e*` handle.

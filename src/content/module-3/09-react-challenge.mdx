@@ -1,0 +1,44 @@
+---
+title: "Challenge: Fix This React Code"
+type: "reading"
+---
+
+# Challenge: Fix This Client Code
+
+**Type:** Fix this code
+
+The SDK flow below has issues. Identify and fix them.
+
+```ts
+await client.connect(publicClient, walletClient);
+
+const ctHash = await publicClient.readContract({
+  address,
+  abi,
+  functionName: "getBalance",
+  args: [account],
+});
+
+const balance = await client.decryptForView(ctHash, FheTypes.Uint32).execute();
+console.log(balance);
+```
+
+---
+
+**Expected fixes:**
+
+1. **Permit handling:** Ensure a permit exists before `decryptForView`:
+   ```ts
+   await client.permits.getOrCreateSelfPermit();
+   ```
+
+2. **Type handling:** Make sure `ctHash` and `utype` are correct for the encrypted return value:
+   ```ts
+   const balance = await client
+     .decryptForView(ctHash, FheTypes.Uint32)
+     .execute();
+   ```
+
+3. **State handling:** In app code, treat read/decrypt as async phases and show proper loading/error states.
+
+**You should now be able to:** create config and client and connect; encrypt inputs and use decrypt (`decryptForView`/`decryptForTx`) with permits; and fix common client/permit/loading issues.

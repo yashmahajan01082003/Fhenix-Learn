@@ -1,0 +1,7 @@
+{
+    "title": "Client Side",
+    "description": "Config, client, connect, encrypt inputs, decrypt and permits, ABI transforms, and SDK-based React integration.",
+    "difficulty": "Intermediate",
+    "estimatedHours": 3,
+    "slug": "client-side"
+}

@@ -1,0 +1,52 @@
+---
+title: "ABI Transforms (@cofhe/abi)"
+type: "reading"
+---
+
+# ABI Transforms (@cofhe/abi)
+
+`@cofhe/abi` provides helpers to map contract ABI shapes to SDK types. Prefer these over hand-written tuple packing.
+
+## Transforming Return Values
+
+Contract views returning `euint*`, `ebool`, or `eaddress` come back as raw ABI values. Convert to `{ ctHash, utype }` for decrypt:
+
+```ts
+import { transformEncryptedReturnTypes } from "@cofhe/abi";
+
+const raw = await publicClient.readContract({
+  address: contractAddress,
+  abi,
+  functionName: "getEncryptedBalance",
+  args: [account],
+});
+
+const { ctHash, utype } = transformEncryptedReturnTypes(
+  abi,
+  "getEncryptedBalance",
+  raw
+);
+
+const plaintext = await client.decryptForView(ctHash, utype).execute();
+```
+
+## Extracting and Inserting Encryptable Values
+
+For mixed arguments (some plaintext, some `InE*`):
+
+```ts
+import {
+  extractEncryptableValues,
+  insertEncryptedValues,
+} from "@cofhe/abi";
+
+const args = [account, 42n]; // account + plaintext value to encrypt
+const toEncrypt = extractEncryptableValues(abi, "setBalance", args);
+
+const encrypted = await client.encryptInputs(toEncrypt).execute();
+const finalArgs = insertEncryptedValues(abi, "setBalance", args, encrypted);
+
+await contract.write.setBalance(finalArgs);
+```
+
+For vanilla SDK flows, use these helpers to avoid shape/order mistakes in mixed-argument calls.

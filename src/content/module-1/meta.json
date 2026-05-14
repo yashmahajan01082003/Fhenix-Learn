@@ -1,0 +1,6 @@
+{
+    "slug": "foundations-encrypted-computation",
+    "title": "Module 1: Foundations of Encrypted Computation",
+    "description": "Establish the conceptual base. Understand why Ethereum's transparency creates privacy limitations, how PETs solve them, and what FHE uniquely unlocks.",
+    "estimatedHours": 4
+}

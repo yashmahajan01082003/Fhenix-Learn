@@ -1,0 +1,44 @@
+---
+title: "Challenge: Fix This Code"
+type: "reading"
+---
+
+# Module 3 Challenge: Fix This Code
+
+**Type:** Fix this code
+
+The client code below has several issues. Identify and fix them.
+
+```ts
+import { createCofheConfig, createCofheClient } from "@cofhe/sdk/web";
+import { chains } from "@cofhe/sdk/chains";
+import { Encryptable, FheTypes } from "@cofhe/sdk";
+
+const config = createCofheConfig({ supportedChains: [chains.arbSepolia] });
+const client = createCofheClient(config);
+
+// Write a value
+const [enc] = await client.encryptInputs([Encryptable.uint32(100n)]).execute();
+await myContract.setValue(enc);
+
+// Read and decrypt
+const ctHash = await myContract.getValue();
+const plain = await client.decryptForView(ctHash, FheTypes.Uint32).execute();
+console.log(plain);
+```
+
+---
+
+**Expected fixes:**
+
+1. **Connect before use:** Call `await client.connect(publicClient, walletClient)` before `encryptInputs` and `decryptForView`. Otherwise `NotConnected` will be thrown.
+
+2. **Encrypt API:** The builder terminator is `.execute()`.
+
+3. **Decrypt API:** `decryptForView` always requires a permit. Create/select one before decrypting:
+   ```ts
+   await client.permits.getOrCreateSelfPermit();
+   const plain = await client.decryptForView(ctHash, FheTypes.Uint32).execute();
+   ```
+
+4. **Permit + scope correctness:** If you get permit/ACL errors, confirm you're connected to the right `chainId` and `account` (permits are scoped to both).

@@ -1,0 +1,29 @@
+---
+title: "Mental Model"
+type: "reading"
+---
+
+# Mental Model
+
+CoFHE (Confidential FHE) lets you build **confidential smart contracts** — contracts that operate on encrypted data without ever seeing the plaintext. As a Solidity developer, you'll work across two layers:
+
+1. **Contract layer** — `FHE.sol` / `ICofhe.sol`: encrypted types (`euint64`, `ebool`, etc.), inputs (`InE*`), and ACL (access control on ciphertext handles).
+
+2. **Client layer** — `@cofhe/sdk`: encrypt plaintext before sending to contracts, decrypt results for UI or on-chain publish.
+
+The stack is **unified**: you must understand both sides. A confidential dApp only works when contract and client correctly pass encrypted handles, manage ACL, and handle permits.
+
+## Core Flow
+
+```
+Client (plaintext) → encrypt → InE* tuple → Contract (FHE.asE*) → encrypted handle
+Contract returns e* handle → Client decrypts (with permit) → plaintext for UI
+```
+
+- **Encryption** happens client-side. The contract receives pre-encrypted payloads.
+- **FHE operations** (add, compare, select, etc.) happen on-chain on encrypted handles.
+- **Decryption** is permission-gated (ACL + permits) and can be client-side (UI) or on-chain (publish).
+
+## Key Insight
+
+Ciphertext handles are **opaque**. The contract and client treat them as identifiers. Who can use or decrypt a handle is controlled by ACL grants and permits — not by moving data around.

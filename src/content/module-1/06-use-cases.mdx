@@ -1,0 +1,87 @@
+---
+title: "FHE Use Cases on Ethereum"
+type: "reading"
+---
+
+# 5. FHE Use Cases on Ethereum
+
+This section covers the real problems FHE solves and why developers choose FHE over ZK, MPC, or TEEs for certain applications.
+The unifying theme: **FHE enables shared private state and private logic inside EVM-compatible smart contracts, making it ideal for building privacy-preserving smart contracts.**
+
+## 5.1 Confidential Balances and DeFi
+
+FHE enables DeFi systems with confidential balances where:
+* **Encrypted balances** - Users submit encrypted token balances that remain private
+* **Private strategies** - Trading strategies run on encrypted data without revealing positions
+* **No frontrunning** - Encrypted transactions prevent MEV extraction
+* **Private order flow** - Order sizes and timing remain hidden
+* **Encrypted vault logic** - Vault operations happen on encrypted balances
+* **Secret LP positions** - Liquidity provider positions remain private
+
+**Why FHE?** Unlike ZK (which reveals results) or MPC (which requires coordination), FHE maintains encrypted state throughout the entire DeFi lifecycle. Balances, operations, and results all remain encrypted until explicitly authorized for decryption.
+
+## 5.2 Private Auctions and Bidding
+
+FHE supports full sealed-bid auction protocols without commit–reveal:
+* **Encrypted bids** - All bids are encrypted before submission
+* **Encrypted comparisons** - Winner determination happens on ciphertexts
+* **Private results** - Winner and winning bid remain encrypted until authorized
+* **No leakage** - No information leaks during bidding or evaluation phases
+* **Single-phase protocol** - No need for two-phase commit-reveal schemes
+
+**Why FHE?** FHE enables true sealed-bid auctions where comparisons happen on encrypted values. Unlike ZK (which would require revealing the winner) or MPC (which needs all bidders online), FHE allows the contract to determine winners privately without any party seeing bid values.
+
+## 5.3 Encrypted Games
+
+Games require hidden state and private logic. FHE supports:
+* **Hidden moves** - Player moves remain encrypted until revealed
+* **Partial information games** - Information asymmetry maintained through encryption
+* **Encrypted randomness** - Deterministic encrypted random number generation
+* **Private scoring** - Scores and game state remain encrypted
+* **Encrypted game logic** - Turn-based or real-time logic operates on encrypted state
+
+**Why FHE?** Games need persistent encrypted state and private logic paths. FHE's ability to maintain encrypted state variables and perform encrypted comparisons makes it ideal for games where players shouldn't see each other's moves or game state until appropriate.
+
+## 5.4 Private Voting
+
+FHE enables truly private voting systems:
+* **Encrypted votes** - Each vote is encrypted before submission
+* **Encrypted tallying** - Vote counting happens on encrypted values
+* **No intermediate leaks** - Partial results never exposed
+* **Individual privacy** - Individual votes never revealed, even after tallying
+* **Collective decryption** - Final result can be decrypted when authorized
+
+**Why FHE?** Unlike ZK (which proves correctness but may reveal results) or MPC (which requires coordination), FHE enables the contract itself to tally encrypted votes privately. The contract can compute results without any party seeing individual votes or intermediate tallies.
+
+## 5.5 Enterprise Workflows and Confidential Computation
+
+FHE supports enterprise applications requiring confidential computation:
+* **Encrypted supply chain data** - Supply chain information remains private
+* **Confidential pricing models** - Pricing logic operates on encrypted data
+* **Cross-organizational computation** - Multiple organizations compute without sharing raw data
+* **Privacy-preserving compliance** - Compliance checks happen on encrypted data
+* **Encrypted analytics** - Global aggregates (averages, metrics, KPIs) computed without revealing individual contributions
+
+**Why FHE?** Enterprise workflows often require computation across organizations without data sharing. FHE enables multiple parties to contribute encrypted data to a shared contract that computes results privately, maintaining confidentiality while enabling collaboration.
+
+## 5.6 Encrypted Analytics and Aggregates
+
+Applications can maintain encrypted global aggregates:
+* **Average scores** - Compute averages without revealing individual values
+* **Risk metrics** - Calculate risk without exposing underlying data
+* **Leaderboards** - Rank players without revealing exact scores
+* **KPIs and financial ratios** - Compute metrics on encrypted financial data
+
+All updated without ever revealing individual contributions, enabling privacy-preserving analytics.
+
+### Connecting Use Cases to Privacy Toggles
+
+Each use case leverages FHE's ability to hide what can be hidden:
+
+* **Confidential balances** - Hide encrypted state (balances) and encrypted inputs/outputs (transactions)
+* **Private auctions** - Hide encrypted inputs (bids) and encrypted computation (comparisons)
+* **Encrypted games** - Hide encrypted state (game state) and encrypted logic (move evaluation)
+* **Private voting** - Hide encrypted inputs (votes) and encrypted computation (tallying)
+* **Enterprise workflows** - Hide encrypted state and encrypted computation across organizations
+
+While transaction existence remains visible (a fundamental blockchain limitation), FHE enables hiding the values, logic, and state that matter most for these applications.

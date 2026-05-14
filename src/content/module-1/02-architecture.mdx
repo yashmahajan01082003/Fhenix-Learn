@@ -1,0 +1,28 @@
+---
+title: "CoFHE Architecture"
+type: "reading"
+---
+
+# CoFHE Architecture
+
+CoFHE (Coprocessor for FHE) brings Fully Homomorphic Encryption to Ethereum-compatible smart contracts. This lesson gives you a high-level picture of the stack and data flow.
+
+## Main components
+
+- **Smart contract (on-chain):** Your Solidity contract. It uses encrypted types (`euintX`, `ebool`), calls `FHE.*` for operations and ACL, and receives encrypted inputs as `InE*` structs.
+- **Coprocessor (off-chain):** Specialized FHE nodes that perform homomorphic computation. The contract requests work (e.g. `FHE.add(a, b)`); the coprocessor does the work and returns a **handle** to the result.
+- **Client (off-chain):** Your app (e.g. browser or Node). It uses `@cofhe/sdk` to create config and client, connect, **encrypt** user inputs, send transactions, and **decrypt** handles when the contract has allowed it (with permits where required).
+
+## High-level flow
+
+1. **Contract** needs FHE work → emits request → **coprocessor** computes → returns handle to contract.
+2. **Contract** stores and manipulates handles; grants access via ACL (`allowThis`, `allowSender`, etc.).
+3. **Client** encrypts inputs with the SDK, sends tx with encrypted args; for viewing or for on-chain use, client **decrypts** using `decryptForView` or `decryptForTx`, subject to ACL and permits.
+
+## Why this split?
+
+FHE computation is too expensive to run on every EVM node. The coprocessor model keeps verification and state on-chain while moving heavy FHE work off-chain. Your contract and client stay in control of **who** can decrypt what (ACL + permits).
+
+## What you'll learn next
+
+Later lessons cover: the transparency problem and why FHE matters (Module 1), encrypted types and ACL basics (Module 2), and client setup and decrypt flows (Module 3).

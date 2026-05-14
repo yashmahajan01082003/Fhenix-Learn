@@ -1,0 +1,6 @@
+{
+    "slug": "encrypted-types-operations",
+    "title": "Module 2: Encrypted Types & Basic Operations",
+    "description": "Master encrypted integers, booleans, safe inputs, and your first encrypted computation without leaks.",
+    "estimatedHours": 4
+}

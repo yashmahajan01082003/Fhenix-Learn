@@ -1,0 +1,42 @@
+---
+title: "2.1 Encrypted Compute Types"
+type: "reading"
+---
+
+# 2.1 Encrypted Compute Types
+
+CoFHE provides special Solidity types that represent encrypted values. These types **never hold plaintext**; at the contract level they are opaque handles to encrypted data.
+
+## euintX — Encrypted Unsigned Integers
+
+These are encrypted analogs of Solidity’s `uintX` types.
+
+| Encrypted Type | Solidity Analog | Size |
+| :--- | :--- | :--- |
+| `euint8` | `uint8` | 8-bit |
+| `euint16` | `uint16` | 16-bit |
+| `euint32` | `uint32` | 32-bit |
+| `euint64` | `uint64` | 64-bit |
+| `euint128` | `uint128` | 128-bit |
+
+### What they represent
+An `euintX` is:
+* a fully encrypted integer
+* represented on-chain as an opaque handle
+* only operable using FHE-safe operations
+* **never decryptable** inside the contract
+
+### What operations they support
+`euintX` supports a rich set of operations defined in `FHE.sol`, including addition, subtraction, multiplication, division, remainder, bitwise ops, shifts, and comparisons.
+
+All of these operate entirely on encrypted data.
+
+## ebool — Encrypted Boolean
+
+An `ebool` represents an encrypted boolean value.
+
+* **Produced by:** comparing two encrypted integers
+* **Stored:** encrypted
+* **Usage:** cannot be used as a native `bool`, cannot be passed into `if`/`require`
+
+`ebool` is the result of comparison functions like `a.eq(b)`, `a.gt(b)`, etc. These return a ciphertext representing true/false — **not a plaintext boolean**.

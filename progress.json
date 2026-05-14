@@ -1,0 +1,27 @@
+{
+  "test-user": {
+    "user_id": "test-user",
+    "display_name": null,
+    "xp": 50,
+    "completed_modules": [
+      "module-1"
+    ],
+    "completed_lessons": [
+      "module-1-01-glossary"
+    ],
+    "badges": []
+  },
+  "did:privy:cmijlejh504rula0clwo8e3f7": {
+    "user_id": "did:privy:cmijlejh504rula0clwo8e3f7",
+    "display_name": "did:pr",
+    "xp": 200,
+    "completed_modules": [],
+    "completed_lessons": [
+      "module-1-glossary",
+      "module-1-architecture",
+      "module-1-transparency-problem",
+      "module-1-quiz"
+    ],
+    "badges": []
+  }
+}

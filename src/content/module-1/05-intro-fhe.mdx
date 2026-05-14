@@ -1,0 +1,82 @@
+---
+title: "What FHE Is: Homomorphic Compute on Encrypted Data"
+type: "reading"
+---
+
+# 4. What FHE Is: Homomorphic Compute on Encrypted Data
+
+Fully Homomorphic Encryption (FHE) is a cryptographic primitive that allows arbitrary computation on encrypted data without ever decrypting it.
+This is the conceptual core that powers encrypted smart contracts.
+
+## 4.1 The Encrypted-In/Encrypted-Out Paradigm
+
+FHE follows a fundamentally different model than traditional encryption:
+
+**Traditional encryption:**
+`Encrypt → [decrypt] → compute → [encrypt]`
+
+**FHE (encrypted-in/encrypted-out):**
+`Encrypt → compute on ciphertext → decrypt result at the end`
+
+This encrypted-in/encrypted-out paradigm means:
+* **Encrypted inputs** - Data enters the system already encrypted
+* **Homomorphic computation** - Operations happen directly on ciphertexts
+* **Encrypted outputs** - Results remain encrypted until explicitly decrypted
+* **No plaintext exposure** - Plaintext never appears during computation
+* **Computation is indistinguishable** - Observers cannot tell what operations occurred
+* **Encrypted results become new inputs** - Outputs can feed into further computations
+* **Authorized decryption only** - Only parties with proper access can decrypt
+
+This is revolutionary because it enables computation on data you cannot see.
+
+## 4.2 How FHE Enables Private Computation
+
+FHE enables computation on encrypted data through homomorphic operations:
+
+**Homomorphic Operations:**
+* **Arithmetic:** Addition, subtraction, multiplication, division on encrypted numbers
+* **Comparison:** Greater than, less than, equal to on encrypted values
+* **Logical:** AND, OR, XOR, NOT on encrypted booleans
+* **Bitwise:** Shifts, rotations on encrypted bits
+
+**Key Properties:**
+* Operations preserve encryption - results are still encrypted
+* Operations are composable - encrypted outputs can be inputs to new operations
+* Operations are verifiable - anyone can verify computation happened correctly
+* Operations hide computation - observers cannot determine what was computed
+
+**What This Enables:**
+* Encrypted state variables that can be updated privately
+* Encrypted inputs that can be processed without revealing values
+* Encrypted outputs remain private until authorized
+* Private logic paths that don't leak information through branching
+* End-to-end privacy from input to output
+
+This makes FHE uniquely capable of supporting private smart contract logic where both data and computation remain hidden.
+
+## 4.3 Why FHE Enables Private Smart Contract Logic
+
+FHE enables private computation because every transformation happens on ciphertexts:
+
+**Privacy Guarantees:**
+* **No plaintext exposure** - Nodes and validators never see unencrypted data
+* **Encrypted storage** - State variables store encrypted values, not plaintext
+* **Encrypted events** - Events reference encrypted handles, not actual values
+* **Oblivious branching** - Conditional logic uses selection, not branching that leaks paths
+* **Encrypted outputs** - Results remain encrypted until explicitly authorized for decryption
+
+**What Makes FHE Unique:**
+
+FHE is the only privacy technology that simultaneously achieves:
+
+1. **Private state** - Encrypted state variables that can be updated privately
+2. **Private logic** - Computation paths that don't leak information
+3. **Private output** - Results that remain encrypted until authorized
+4. **Full composability** - Works seamlessly with EVM and other smart contracts
+
+No other Privacy Enhancing Technology (PET) achieves all four simultaneously:
+* ZK proofs reveal results once verified
+* MPC requires coordination and doesn't scale well for stateful systems
+* TEEs require hardware trust and centralization
+
+FHE's encrypted-in/encrypted-out paradigm makes it uniquely suited for building privacy-preserving smart contracts where both data and computation remain private.

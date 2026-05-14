@@ -1,0 +1,32 @@
+---
+title: "2.3 Trivial Encryption"
+type: "reading"
+---
+
+# 2.3 Trivial Encryption
+
+Smart contracts often need to combine encrypted values with known constants. Since plaintext cannot interact directly with ciphertext, CoFHE provides **trivial encryption** for literals.
+
+## How trivial encryption works
+
+Use `FHE.asEuintX(<literal>)` to convert a plaintext literal into a ciphertext compatible with FHE operations.
+
+**Examples:**
+```solidity
+// Encrypt the number 2
+euint8 two = FHE.asEuint8(2);
+
+// Encrypt the number 1000
+euint64 base = FHE.asEuint64(1000);
+```
+
+This produces an encrypted-compatible value representing the literal, allowing encrypted math to proceed safely.
+
+## Privacy propagation rules
+
+* Trivially encrypted literals are **not confidential by themselves**. Known constants remain public knowledge.
+* Combining `ciphertext + trivial ciphertext` = `output ciphertext`.
+* This pattern enables type-compatible encrypted computation; it does not make known literals secret.
+* The resulting value always remains encrypted.
+
+This is foundational to constructing encrypted arithmetic.

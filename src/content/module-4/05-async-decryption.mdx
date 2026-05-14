@@ -1,0 +1,27 @@
+---
+title: "Async Decryption Model"
+type: "reading"
+---
+
+# Async Decryption Model
+
+Decryption in CoFHE is an explicit asynchronous flow that combines off-chain work with optional on-chain publication or verification.
+
+## Canonical Flow
+
+1. **Grant ACL permission on-chain** for the ciphertext handle (`allowPublic`, `allow`, or `allowSender` depending on policy).
+2. **Request decryption off-chain** using `decryptForTx(ctHash)` from the client.
+   - Publicly revealable handle: usually `.withoutPermit()`
+   - Restricted handle: `.withPermit()`
+3. **Receive `{ ctHash, decryptedValue, signature }`** from the threshold network path.
+4. **Submit on-chain** to either:
+   - `FHE.publishDecryptResult(...)` (publish plaintext), or
+   - `FHE.verifyDecryptResult(...)` (verify authenticity without publishing globally).
+
+## UI-Only Reads
+
+Use `decryptForView(ctHash, utype)` when the plaintext is only needed in the UI and no on-chain publish/verify is required.
+
+## Readiness and Polling
+
+When a frontend depends on on-chain readability of a published decrypt result, use a view that calls `FHE.getDecryptResultSafe(...)` and poll until the result is marked ready.

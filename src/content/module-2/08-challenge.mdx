@@ -1,0 +1,53 @@
+---
+title: "2.6 Challenge — First Encrypted Operation"
+type: "sandbox"
+requiredPatterns: "contract FirstEncryptedOperation, euint8, function submit, InEuint8, FHE.asEuint8, stored"
+successMessage: "Your encrypted operation contract looks great! You've handled input conversion, trivial encryption, and encrypted arithmetic. 🎉"
+---
+
+# 2.6 Challenge — First Encrypted Operation
+
+In this exercise, you will implement your first complete encrypted flow:
+1. Receive encrypted input
+2. Convert wrapper into `euintX`
+3. Apply encrypted math
+4. Store encrypted result
+
+## Starter Contract
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
+
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
+
+contract FirstEncryptedOperation {
+  euint8 public stored;
+
+  function submit(InEuint8 memory input) public {
+      // 1. Convert input wrapper -> encrypted compute type
+      euint8 x = FHE.asEuint8(input);
+
+      // 2. Trivially encrypt a literal
+      euint8 two = FHE.asEuint8(2);
+
+      // 3. Perform encrypted arithmetic
+      euint8 result = x * two;  // encrypted double
+
+      // 4. Store encrypted result
+      stored = result;
+  }
+}
+```
+
+## Learning outcomes
+This challenge reinforces:
+* correct usage of `InEuintX`
+* the mandatory conversion step
+* trivial encryption
+* encrypted arithmetic
+* encrypted state storage
+
+It bridges the conceptual shift from "encrypted math is a thing" to "I can now do it inside a smart contract safely."
+
+**You should now be able to:** use euintX/ebool and InE* → FHE.asE*; explain ACL basics and ciphertext lifecycle; perform encrypted arithmetic and comparisons; and avoid branching on encrypted values.

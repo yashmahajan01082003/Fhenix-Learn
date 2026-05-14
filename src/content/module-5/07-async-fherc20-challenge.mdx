@@ -1,0 +1,48 @@
+---
+title: "Challenge: Fix This Code"
+type: "reading"
+---
+
+# Challenge: Fix This Code
+
+**Goal:** Fix two incorrect snippets so they follow CoFHE patterns: no branching on encrypted conditions, and FHERC20 operator model (no approve/allowance).
+
+Two snippets need fixes.
+
+**Snippet A — Contract:**
+
+```solidity
+// Intended: branch on encrypted comparison
+if (FHE.eq(secret, guess)) {
+    reward = FHE.asEuint64(100);
+} else {
+    reward = FHE.asEuint64(0);
+}
+```
+
+**Snippet B — FHERC20 usage:**
+
+```solidity
+// Intended: allow operator to do confidentialTransferFrom
+token.approve(operator, type(uint256).max);
+```
+
+---
+
+**Expected fixes:**
+
+**Snippet A:** Use `FHE.select` instead of plaintext branching:
+
+```solidity
+ebool match = FHE.eq(secret, guess);
+reward = FHE.select(match, FHE.asEuint64(100), FHE.asEuint64(0));
+```
+
+**Snippet B:** FHERC20 uses operators, not approve:
+
+```solidity
+uint256 until = block.timestamp + 7 days;
+token.setOperator(operator, until);
+```
+
+**Hints:** Snippet A — see Module 4 (no-if-else, fhe-select-leakage). Snippet B — see this module's FHERC20 Utilization lesson (operator model only).

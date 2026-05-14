@@ -1,0 +1,38 @@
+---
+title: "FHERC20 Utilization"
+type: "reading"
+---
+
+# FHERC20 Utilization
+
+FHERC20 is a confidential ERC20. Use it correctly — the model differs from standard ERC20.
+
+## Operator Model (Not approve/allowance)
+
+FHERC20 does **not** use `approve` or `allowance`. Use operators:
+
+```solidity
+token.setOperator(operator, until);  // operator valid until timestamp
+// Later: operator calls confidentialTransferFrom(...)
+```
+
+Do **not** call `approve` or `allowance` on FHERC20 — they revert.
+
+## Indicated vs Encrypted Balance
+
+- **Indicated balance** — Public UX signal. Do **not** use in contract logic.
+- **Encrypted balance** — The real balance. Use for transfers and checks.
+
+## Passing Encrypted Amounts
+
+When calling transfer functions with an **existing** encrypted handle (not `InE*` input), the contract requires ACL. Use `FHE.isAllowed` checks. For `InE*` inputs, conversion via `FHE.asEuint64` grants transient access.
+
+## Confidential Transfers
+
+- `confidentialTransfer(recipient, InEuint64)` — From caller's encrypted balance.
+- `confidentialTransferFrom(from, to, amount)` — Delegated transfer; requires operator.
+- Callbacks — FHERC20 supports transfer callbacks; implement the interface if needed.
+
+## Summary
+
+FHERC20 uses an **operator model only**: use `setOperator(operator, until)` for delegation and `confidentialTransferFrom` for delegated transfers. **Do not** use `approve` or `allowance` — they are not part of the FHERC20 model and will revert. Always use indicated vs encrypted balance correctly and grant ACL on handles when passing existing encrypted amounts. Validate patterns against COFHE_STACK_ANALYSIS and the FHERC20 integration checklist.

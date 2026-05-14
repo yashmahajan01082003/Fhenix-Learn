@@ -1,0 +1,42 @@
+---
+title: "Read and Decrypt Hooks"
+type: "reading"
+---
+
+# Read and Decrypt (Canonical SDK Flow)
+
+This curriculum uses the official docs pattern: read an encrypted handle from contract state, then decrypt it with `decryptForView`.
+
+## Step 1: Read handle from contract
+
+```typescript
+const ctHash = await publicClient.readContract({
+  address: counterAddress,
+  abi: counterAbi,
+  functionName: "numberHash",
+});
+```
+
+## Step 2: Ensure permit
+
+```typescript
+await cofheClient.permits.getOrCreateSelfPermit();
+```
+
+## Step 3: Decrypt for UI
+
+```typescript
+import { FheTypes } from "@cofhe/sdk";
+
+const plaintext = await cofheClient
+  .decryptForView(ctHash, FheTypes.Uint32)
+  .execute();
+```
+
+## UI guidance
+
+- If permit is missing, prompt user to create/select permit.
+- Keep `read` and `decrypt` states separate in UI.
+- Never display a fake default value (for example `0`) when decryption is blocked by missing permit.
+
+> **Coming soon:** React hook wrappers may be added when officially documented. For now, use the SDK flow above as source-of-truth.

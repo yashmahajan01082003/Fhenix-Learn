@@ -1,0 +1,36 @@
+---
+title: "2.5 Encrypted Comparisons"
+type: "reading"
+---
+
+# 2.5 Encrypted Comparisons
+
+Comparisons between encrypted integers produce **encrypted booleans**, not plaintext ones.
+
+## Available comparison functions
+
+You can use functions like `a.eq(b)` (Equal), `a.gt(b)` (Greater Than), `a.gte(b)` (Greater Than or Equal), `a.lt(b)` (Less Than), and `a.lte(b)` (Less Than or Equal).
+
+These return an `ebool` ciphertext.
+
+## Why you cannot branch on encrypted booleans
+
+A normal Solidity `if` statement reveals:
+* which path was taken
+* gas differences
+* storage diffs
+* event patterns
+
+This would leak the underlying secret.
+
+**Therefore:**
+
+❌ **NEVER WRITE:**
+```solidity
+if (a.gt(b)) { ... }   // LEAKS DATA
+```
+
+✅ **ALWAYS:**
+Treat comparisons as encrypted values that feed into FHE primitives like `FHE.select()` (covered in Module 4).
+
+This is directly mandated by the CoFHE/FHE.sol specification.

@@ -1,0 +1,56 @@
+---
+title: "Config, Client, and Connect"
+type: "reading"
+---
+
+# Config, Client, and Connect
+
+## 1. Create Config
+
+Import from the entrypoint for your runtime:
+
+- **Browser / Next.js:** `@cofhe/sdk/web`
+- **Node / Hardhat:** `@cofhe/sdk/node`
+
+```ts
+import { createCofheConfig, createCofheClient } from "@cofhe/sdk/web";
+import { chains } from "@cofhe/sdk/chains";
+
+const config = createCofheConfig({
+  supportedChains: [chains.arbSepolia],
+});
+```
+
+Use `chains.arbSepolia` for Arbitrum Sepolia. Other options: `chains.sepolia`, `chains.baseSepolia`, `chains.hardhat` (mocks).
+
+## 2. Create Client
+
+```ts
+const client = createCofheClient(config);
+```
+
+## 3. Connect
+
+Pass viem `publicClient` and `walletClient`:
+
+```ts
+import { createPublicClient, createWalletClient, http } from "viem";
+import { arbitrumSepolia } from "viem/chains";
+
+const publicClient = createPublicClient({
+  chain: arbitrumSepolia,
+  transport: http(),
+});
+
+const walletClient = createWalletClient({
+  chain: arbitrumSepolia,
+  transport: http(),
+  account: yourAccount,
+});
+
+await client.connect(publicClient, walletClient);
+```
+
+With Wagmi, use `usePublicClient` and `useWalletClient` and pass them to `client.connect`. With Ethers v5/v6, use `Ethers5Adapter` or `Ethers6Adapter` from `@cofhe/sdk/adapters` to produce viem-shaped clients. With Hardhat tests, use `hre.cofhe.hardhatSignerAdapter(signer)` to get viem clients; for batteries-included setup, see the Hardhat lesson in Real World Patterns.
+
+**Important:** Operations like encrypt and decrypt require `client.connect()` to be called first. Otherwise you'll get `NotConnected`.

@@ -1,0 +1,38 @@
+---
+title: "Ciphertext Lifecycle"
+type: "reading"
+---
+
+# Ciphertext Lifecycle
+
+Encrypted values in CoFHE follow a clear lifecycle: creation, optional grants, and decryption or reuse.
+
+## 1. Creation
+
+A handle is **created** when:
+
+- The contract converts client input: `FHE.asEuint64(inEuint64)` (from `InE*` struct).
+- The contract creates an encrypted literal: e.g. trivial encryption.
+- The contract gets a result from an FHE operation: e.g. `FHE.add(a, b)` returns a new handle.
+
+At creation, the handle is usable in the **current transaction** (transaction-scoped). It is not automatically usable in later transactions or for client decryption.
+
+## 2. Grant (ACL)
+
+To use the handle **after** the current transaction, the contract must **grant** access:
+
+- **allowThis(handle):** So the contract can use it in a later call.
+- **allowSender(handle):** So the sender’s client can decrypt (with a permit).
+- **allow(handle, account):** So a specific account can decrypt or use it.
+- **allowTransient(handle, account):** Explicitly grant same-tx access to a specific address.
+
+Without a persistent grant, the handle cannot be decrypted by the client or reused on-chain in a later tx.
+
+## 3. Decrypt or reuse
+
+- **Client decrypt:** The client calls `decryptForView` (for UI) or `decryptForTx` (for on-chain publish/verify). The SDK checks ACL and permits; if allowed, decryption proceeds.
+- **On-chain reuse:** In a later transaction, the contract (or another contract, if allowed) can use the handle in further FHE operations or pass it to functions that accept encrypted types.
+
+## Summary
+
+Create → grant (if you need later use or decryption) → decrypt or reuse. Getting the lifecycle right avoids “decryption failed” or “handle not allowed” errors and keeps confidentiality boundaries clear.

@@ -1,0 +1,43 @@
+---
+title: "2.4 Encrypted Arithmetic"
+type: "reading"
+---
+
+# 2.4 Encrypted Arithmetic
+
+## Supported arithmetic operations
+
+All `euintX` types support standard arithmetic operators which are overloaded to work on encrypted data: `a + b`, `a - b`, `a * b`, `a / b`, and `a % b`.
+
+These are operator overloads around FHE-safe functions: `FHE.add(a, b)`, `FHE.sub(a, b)`, `FHE.mul(a, b)`, `FHE.div(a, b)`, and `FHE.mod(a, b)`.
+
+## Key property: all arithmetic outputs remain encrypted
+
+```solidity
+euint32 a = FHE.asEuint32(10);
+euint32 b = FHE.asEuint32(3);
+
+euint32 result = a * b;  // encrypted result of 30
+```
+
+The `result`:
+* is still encrypted
+* cannot be inspected
+* cannot be logged
+* must be returned to the user for decryption (if needed)
+
+## Operator overloading vs explicit calls
+
+Both are equivalent in behavior. Use operator overloads for readability.
+
+**Overloaded:**
+```solidity
+euint64 c = x + y;
+```
+
+**Explicit:**
+```solidity
+euint64 c = FHE.add(x, y);
+```
+
+Both are fully supported.

@@ -1,7 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, CheckCircle, Lock, PlayCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function ModuleCard({ module, progress, isLocked, onClick }) {
   const { title, description, estimatedHours, lessons } = module;

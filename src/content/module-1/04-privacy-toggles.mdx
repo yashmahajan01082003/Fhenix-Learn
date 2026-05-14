@@ -1,0 +1,112 @@
+---
+title: "Privacy Toggles: What You Can and Can't Hide"
+type: "reading"
+---
+
+# 2. Privacy Toggles: What You Can and Can't Hide
+
+Understanding what can be hidden and what cannot is crucial for building realistic privacy-preserving applications. Not everything can be private on a public blockchain, and knowing these boundaries helps you design better systems.
+
+## 2.1 What CAN Be Hidden
+
+With proper techniques (especially FHE), you can hide:
+
+### Encrypted State
+* Account balances stored as encrypted values (`euint32`, `euint64`, etc.)
+* Internal contract state variables
+* Game state, voting tallies, auction bids
+* Any data stored in contract storage
+
+### Encrypted Inputs and Outputs
+* Function parameters sent to contracts
+* Return values from contract functions
+* Transaction amounts and values
+* User-submitted data (votes, bids, moves)
+
+### Encrypted Computation Logic
+* The operations performed on encrypted data (addition, comparison, etc.)
+* Conditional logic paths (using `FHE.select()` instead of `if/else`)
+* Intermediate computation results
+* The actual values being compared or computed
+
+### Private Balances and Amounts
+* Token balances
+* Payment amounts
+* Bid values
+* Scores and metrics
+
+These can all remain encrypted throughout the entire computation lifecycle.
+
+## 2.2 What CANNOT Be Hidden
+
+These are fundamental limitations of public blockchains:
+
+### Transaction Existence and Timing
+* **Every transaction is visible** - you cannot hide that a transaction occurred
+* **Timing patterns** - when transactions happen reveals behavior patterns
+* **Transaction frequency** - how often someone transacts is public
+* **Block inclusion** - which block contains your transaction is visible
+
+### Gas Costs
+* **Gas spent** - reveals computation complexity
+* **Gas price** - reveals urgency or value
+* **Gas patterns** - different operations cost different amounts, leaking information
+* **Failed transactions** - even reverts consume gas and leak information
+
+### Contract Addresses and Interactions
+* **Contract addresses** - which contracts you interact with is public
+* **Function calls** - which functions you call is visible (even if parameters are encrypted)
+* **Cross-contract calls** - the call graph is public
+* **Contract deployment** - when and by whom contracts are deployed
+
+### Event Emissions
+* **Event existence** - even if event data is encrypted, the fact that an event was emitted is visible
+* **Event ordering** - the sequence of events reveals flow
+* **Event frequency** - how often events fire reveals activity
+* **Indexed fields** - indexed event parameters are searchable
+
+### Network-Level Metadata
+* **Transaction origin** - sender address is always public
+* **Transaction destination** - recipient address is public
+* **Block metadata** - block number, timestamp, miner
+* **Network topology** - which nodes see transactions first
+
+## 2.3 Why These Limitations Exist
+
+These limitations exist because blockchains prioritize:
+
+1. **Verifiability** - Anyone must be able to verify transactions
+2. **Censorship resistance** - No single party can hide transactions
+3. **Decentralization** - All nodes must see all transactions
+4. **Consensus** - Agreement requires visibility
+
+These are fundamental trade-offs. You cannot have both complete privacy and complete transparency.
+
+## 2.4 How FHE Addresses the "Can Hide" Items
+
+FHE enables hiding the things that matter most for many applications:
+
+* **State privacy** - Encrypted storage prevents balance/state leaks
+* **Input/output privacy** - Encrypted parameters hide transaction details
+* **Computation privacy** - Homomorphic operations hide what's being computed
+* **Logic privacy** - Oblivious selection (`FHE.select()`) hides conditional paths
+
+While you cannot hide transaction existence, you can hide what the transaction does, what values it operates on, and what results it produces.
+
+## 2.5 Practical Implications
+
+When designing privacy-preserving applications:
+
+**Do:**
+* Encrypt sensitive state and inputs
+* Use FHE for computations on encrypted data
+* Minimize event emissions
+* Batch operations to reduce transaction frequency
+
+**Don't:**
+* Assume you can hide transaction existence
+* Try to hide gas costs (they're always visible)
+* Expect to hide contract interactions
+* Assume encrypted events hide their existence
+
+Understanding these boundaries helps you build realistic privacy solutions that work within blockchain constraints.

@@ -1,0 +1,50 @@
+---
+title: "The 'No If-Else' Reality"
+type: "reading"
+---
+
+# The "No If-Else" Reality
+
+In Fully Homomorphic Encryption, you cannot branch on encrypted data. This means traditional `if-else` statements don't work as expected when the condition is encrypted.
+
+## Why?
+
+Because the processor does not know the value of the condition (it is encrypted), your contract cannot safely choose one branch the way plaintext code does. In practice, this can cause incorrect behavior or leakage if you try to force plaintext-style branching.
+
+## The Solution: Mux (Multiplexer)
+
+Instead of branching, choose between precomputed encrypted values with `FHE.select(condition, whenTrue, whenFalse)`.
+
+This is the canonical encrypted-conditional pattern.
+
+## Don’t Do This
+
+```solidity
+euint32 a = FHE.asEuint32(10);
+euint32 b = FHE.asEuint32(20);
+
+// Wrong: gt returns ebool, not bool
+if (a.gt(b)) {
+    max = a;
+} else {
+    max = b;
+}
+```
+
+## Do This Instead
+
+```solidity
+euint32 a = FHE.asEuint32(10);
+euint32 b = FHE.asEuint32(20);
+
+ebool isHigher = a.gt(b);
+euint32 max = FHE.select(isHigher, a, b);
+```
+
+## Practical Rules
+
+- Never decrypt just to decide contract control flow.
+- Keep logic data-oblivious: compute both candidates, then select.
+- Use `FHE.select` for encrypted conditionals and keep permission updates (`FHE.allowThis`) in mind for stored results.
+
+This pattern is foundational for secure confidential contracts and is used throughout auctions, confidential balances, and game logic.

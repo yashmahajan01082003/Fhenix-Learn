@@ -334,6 +334,23 @@ Because the data never becomes plaintext, even when processed by contracts.
         id: 'm1-final',
         title: 'Challenge: Encrypted Hello World',
         type: 'sandbox',
+        starterCode: `// Challenge: Encrypted Hello World
+// Goal: Deploy a contract that stores an euint32 and allows proving it is encrypted.
+
+contract HiddenValue {
+    // 1. Define an encrypted state variable
+    euint32 private val;
+
+    // 2. Implement a setter that takes an encrypted input
+    function set(inEuint32 memory v) public {
+        val = FHE.asEuint32(v);
+    }
+
+    // 3. Implement a view function to prove it's encrypted (simulated)
+    function check() public view returns (string memory) {
+        return "Value is encrypted";
+    }
+}`,
         content: `
 # Challenge: Encrypted Hello World
 
@@ -563,6 +580,26 @@ contract HiddenValue {
         id: 'm2-final',
         title: '2.6 Challenge — First Encrypted Operation',
         type: 'sandbox',
+        starterCode: `// Challenge: First Encrypted Operation
+// Goal: Receive encrypted input, double it, and store it.
+
+contract FirstEncryptedOperation {
+    euint8 public stored;
+
+    function submit(InEuint8 memory input) public {
+        // 1. Convert input wrapper -> encrypted compute type
+        euint8 x = FHE.asEuint8(input);
+
+        // 2. Trivially encrypt a literal
+        euint8 two = FHE.asEuint8(2);
+
+        // 3. Perform encrypted arithmetic
+        euint8 result = x * two;  // encrypted double
+
+        // 4. Store encrypted result
+        stored = result;
+    }
+}`,
         content: `
   # 2.6 Challenge — First Encrypted Operation
 
@@ -661,6 +698,23 @@ contract HiddenValue {
         id: 'm3-final',
         title: 'Challenge: Trace the Transaction',
         type: 'sandbox',
+        starterCode: `// Challenge: Trace the Transaction
+// Goal: Visualize the flow of an FHE transaction.
+
+// 1. Client generates keypair.
+// 2. Client encrypts input x=10.
+// 3. Smart contract receives x, adds 5.
+// 4. Result y=15 stored as handle.
+
+contract TraceTransaction {
+    euint32 public result;
+
+    function execute(InEuint32 memory encryptedInput) public {
+        euint32 x = FHE.asEuint32(encryptedInput);
+        euint32 five = FHE.asEuint32(5);
+        result = x + five;
+    }
+}`,
         content: `
 # Challenge: Trace the Transaction
 

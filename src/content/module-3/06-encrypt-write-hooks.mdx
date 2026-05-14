@@ -1,0 +1,45 @@
+---
+title: "Encrypt and Write Hooks"
+type: "reading"
+---
+
+# Encrypt and Write (Canonical SDK Flow)
+
+This curriculum uses the official docs pattern: encrypt with `@cofhe/sdk`, then submit a normal contract transaction with the encrypted `InE*` argument.
+
+## Step 1: Encrypt inputs
+
+```typescript
+import { Encryptable } from "@cofhe/sdk";
+
+const [encAmount] = await cofheClient
+  .encryptInputs([Encryptable.uint32(42n)])
+  .execute();
+```
+
+## Step 2: Write transaction
+
+```typescript
+const hash = await walletClient.writeContract({
+  address: counterAddress,
+  abi: counterAbi,
+  functionName: "setCount",
+  args: [encAmount], // maps to Solidity InEuint32
+});
+```
+
+## Optional: show encryption progress
+
+```typescript
+const [encAmount] = await cofheClient
+  .encryptInputs([Encryptable.uint32(42n)])
+  .onStep((step, ctx) => {
+    if (ctx?.isStart) console.log(`Start ${step}`);
+    if (ctx?.isEnd) console.log(`Done ${step} in ${ctx.duration}ms`);
+  })
+  .execute();
+```
+
+Treat encryption and transaction submission as separate UI states.
+
+> **Coming soon:** React hook abstractions may be added when officially documented. For now, use the SDK flow above as the source-of-truth implementation.

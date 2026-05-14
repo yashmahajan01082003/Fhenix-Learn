@@ -1,42 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import { Trophy, Medal, User, Crown, Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Leaderboard() {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-
-        // Fetch progress sorted by XP descending using backend sort
-        const allProgress = await base44.entities.UserProgress.list('-xp', 100);
-        
-        // Deduplicate: Keep only the highest XP record per user
-        const userMap = new Map();
-        allProgress.forEach(record => {
-            if (!record.user_id) return;
-            
-            if (userMap.has(record.user_id)) {
-                if ((record.xp || 0) > (userMap.get(record.user_id).xp || 0)) {
-                    userMap.set(record.user_id, record);
-                }
-            } else {
-                userMap.set(record.user_id, record);
-            }
-        });
-
-        // Convert back to array and take top 50
-        const uniqueLeaders = Array.from(userMap.values())
-            .sort((a, b) => (b.xp || 0) - (a.xp || 0))
-            .slice(0, 50);
-
-        setLeaders(uniqueLeaders);
+        const res = await fetch('/api/leaderboard?limit=50');
+        if (res.ok) {
+          const data = await res.json();
+          // Map the data to the format the Leaderboard expects
+          const formattedLeaders = data.map(leader => ({
+            user_id: leader.user_id,
+            display_name: leader.display_name || `User ${leader.user_id.slice(0, 6)}...`,
+            xp: leader.xp,
+            badges: leader.badges ? JSON.parse(leader.badges) : []
+          }));
+          setLeaders(formattedLeaders);
+        } else {
+          console.error("Failed to fetch leaderboard from API");
+        }
       } catch (e) {
         console.error("Failed to fetch leaderboard", e);
       } finally {
@@ -44,10 +32,10 @@ export default function Leaderboard() {
       }
     };
     fetchData();
-  }, []);
+  }, [currentUser]);
 
   const getRankIcon = (index) => {
-    switch(index) {
+    switch (index) {
       case 0: return <Crown className="w-6 h-6 text-yellow-400" />;
       case 1: return <Medal className="w-6 h-6 text-slate-300" />;
       case 2: return <Medal className="w-6 h-6 text-amber-600" />;
@@ -75,61 +63,61 @@ export default function Leaderboard() {
         </div>
 
         <div className="bg-[#022031] rounded-2xl border border-white/10 overflow-hidden">
-            {/* Header */}
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-white/5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                <div className="col-span-2 md:col-span-1 text-center">Rank</div>
-                <div className="col-span-6 md:col-span-7">User</div>
-                <div className="col-span-2 text-right">Badges</div>
-                <div className="col-span-2 text-right">XP</div>
-            </div>
+          {/* Header */}
+          <div className="grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-white/5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="col-span-2 md:col-span-1 text-center">Rank</div>
+            <div className="col-span-6 md:col-span-7">User</div>
+            <div className="col-span-2 text-right">Badges</div>
+            <div className="col-span-2 text-right">XP</div>
+          </div>
 
-            {/* List */}
-            <div className="divide-y divide-white/5">
-                {leaders.map((leader, index) => {
-                    const isMe = currentUser && leader.user_id === currentUser.id;
-                    
-                    return (
-                        <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            key={leader.id} 
-                            className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/5 transition-colors ${isMe ? 'bg-[#0AD9DC]/5' : ''}`}
-                        >
-                            <div className="col-span-2 md:col-span-1 flex justify-center">
-                                {getRankIcon(index)}
-                            </div>
-                            <div className="col-span-6 md:col-span-7 flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
-                                    ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' : 
-                                      isMe ? 'bg-[#0AD9DC] text-[#011623]' : 'bg-white/10 text-slate-300'}
+          {/* List */}
+          <div className="divide-y divide-white/5">
+            {leaders.map((leader, index) => {
+              const isMe = currentUser && leader.user_id === currentUser.id;
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  key={leader.user_id}
+                  className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/5 transition-colors ${isMe ? 'bg-[#0AD9DC]/5' : ''}`}
+                >
+                  <div className="col-span-2 md:col-span-1 flex justify-center">
+                    {getRankIcon(index)}
+                  </div>
+                  <div className="col-span-6 md:col-span-7 flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
+                                    ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
+                        isMe ? 'bg-[#0AD9DC] text-[#011623]' : 'bg-white/10 text-slate-300'}
                                 `}>
-                                    {leader.display_name ? leader.display_name[0].toUpperCase() : '?'}
-                                </div>
-                                <div>
-                                    <div className={`font-medium ${isMe ? 'text-[#0AD9DC]' : 'text-white'}`}>
-                                        {leader.display_name || 'Anonymous User'} {isMe && '(You)'}
-                                    </div>
-                                    <div className="text-xs text-slate-500">Level {Math.floor((leader.xp || 0) / 1000) + 1}</div>
-                                </div>
-                            </div>
-                            <div className="col-span-2 text-right flex justify-end items-center gap-1 text-slate-400">
-                                <Medal className="w-4 h-4" />
-                                {leader.badges?.length || 0}
-                            </div>
-                            <div className="col-span-2 text-right font-mono font-bold text-[#0AD9DC]">
-                                {(leader.xp || 0).toLocaleString()}
-                            </div>
-                        </motion.div>
-                    );
-                })}
-                
-                {leaders.length === 0 && (
-                    <div className="p-12 text-center text-slate-500">
-                        No pioneers yet. Be the first!
+                      {leader.display_name ? leader.display_name[0].toUpperCase() : '?'}
                     </div>
-                )}
-            </div>
+                    <div>
+                      <div className={`font-medium ${isMe ? 'text-[#0AD9DC]' : 'text-white'}`}>
+                        {leader.display_name || 'Anonymous User'} {isMe && '(You)'}
+                      </div>
+                      <div className="text-xs text-slate-500">Level {Math.floor((leader.xp || 0) / 1000) + 1}</div>
+                    </div>
+                  </div>
+                  <div className="col-span-2 text-right flex justify-end items-center gap-1 text-slate-400">
+                    <Medal className="w-4 h-4" />
+                    {leader.badges?.length || 0}
+                  </div>
+                  <div className="col-span-2 text-right font-mono font-bold text-[#0AD9DC]">
+                    {(leader.xp || 0).toLocaleString()}
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {leaders.length === 0 && (
+              <div className="p-12 text-center text-slate-500">
+                No pioneers yet. Be the first!
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

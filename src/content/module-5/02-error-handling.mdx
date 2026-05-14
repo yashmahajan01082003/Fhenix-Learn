@@ -1,0 +1,46 @@
+---
+title: "Error Handling"
+type: "reading"
+---
+
+# Error Handling
+
+The SDK throws `CofheError`. Use `isCofheError()` and `CofheErrorCode` to triage.
+
+## Common Codes
+
+| Code | When | Action |
+|------|------|--------|
+| `NotConnected` | Encrypt/decrypt before `connect()` | Call `client.connect(publicClient, walletClient)` |
+| `PermitNotFound` | Decrypt with no active permit | Create or select permit via `client.permits` |
+| `UnsupportedChain` | Chain not in config | Add chain to `supportedChains` |
+| `SealOutputFailed` / `DecryptFailed` | Threshold Network failure | Check network, permit, ACL |
+| `ZkVerifyFailed` | Proof verification failed | Retry encrypt or check verifier |
+| `InvalidUtype` | Wrong FHE type for decrypt | Match contract return type |
+
+## Triage Order
+
+1. **Contract revert?** Check custom errors, state machine, auth.
+2. **SDK before tx?** Config, connection, supported chains.
+3. **Permit?** Active permit for `(chainId, account)`.
+4. **Decrypt?** Correct `utype`, ACL grant, threshold network availability.
+5. **Integration?** `InE*` shape from SDK/ABI helpers; returned `e*` treated as handles.
+
+## Don't Blindly Retry
+
+For decrypt failures, fix permit/config/account issues before retrying. Avoid retry loops that ignore the error cause.
+
+## Decode `execution reverted: 0x...` first
+
+Before changing contract logic, decode revert selectors with `@fhenixprotocol/cofhe-errors`:
+
+```bash
+npx cofhe-errors 0x118cdaa7
+```
+
+Use this as a default workflow:
+
+1. Capture the selector from the revert.
+2. Decode with `cofhe-errors`.
+3. Map the decoded error to ACL, auth, input-shape, or config issues.
+4. Fix root cause, then retry.

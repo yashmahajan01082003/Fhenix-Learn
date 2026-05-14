@@ -1,0 +1,142 @@
+---
+title: "Module 1 Quiz"
+type: "quiz"
+---
+
+# Module 1 Quiz
+
+Test your understanding of the foundations of encrypted computation on Ethereum.
+
+## Key Topics Covered
+
+* Ethereum's transparency problem
+* Privacy toggles (what can and can't be hidden)
+* PET landscape and trade-offs
+* FHE fundamentals
+* CoFHE architecture and key concepts
+
+## Question 1: Transparency Problem
+
+Which of the following is NOT a transparency leak vector on Ethereum?
+
+**A)** Storage values (readable via `eth_getStorageAt`)  
+**B)** Calldata (function parameters)  
+**C)** Events (emitted logs)  
+**D)** Encrypted state variables (when using FHE)
+
+**Answer: D** - When using FHE, encrypted state variables store handles, not plaintext values, so they don't leak information.
+
+## Question 2: Privacy Toggles
+
+What CANNOT be hidden on Ethereum, even with FHE?
+
+**A)** Encrypted state variables  
+**B)** Encrypted function inputs  
+**C)** Transaction existence and timing  
+**D)** Encrypted computation results
+
+**Answer: C** - Transaction existence and timing are fundamental blockchain properties that cannot be hidden.
+
+## Question 3: PET Trade-offs
+
+Which PET requires hardware trust?
+
+**A)** Zero-Knowledge Proofs (ZK)  
+**B)** Multi-Party Computation (MPC)  
+**C)** Trusted Execution Environments (TEEs)  
+**D)** Fully Homomorphic Encryption (FHE)
+
+**Answer: C** - TEEs require trusting the hardware manufacturer and secure enclave implementation.
+
+## Question 4: FHE Expressivity
+
+What makes FHE unique compared to other PETs?
+
+**A)** Fastest performance  
+**B)** General-purpose encrypted computation with encrypted state  
+**C)** No trust assumptions  
+**D)** Lowest gas costs
+
+**Answer: B** - FHE uniquely supports general-purpose encrypted computation while maintaining encrypted state.
+
+## Question 5: Encrypted-In/Encrypted-Out
+
+What does the encrypted-in/encrypted-out paradigm mean?
+
+**A)** Data is encrypted only during transmission  
+**B)** Data enters encrypted, stays encrypted during computation, exits encrypted  
+**C)** Data is encrypted only when stored  
+**D)** Data is encrypted only in events
+
+**Answer: B** - The encrypted-in/encrypted-out paradigm means data remains encrypted throughout the entire computation lifecycle.
+
+## Question 6: CoFHE Architecture
+
+What is the role of the coprocessor in CoFHE?
+
+**A)** It runs smart contracts  
+**B)** It performs FHE computation off-chain  
+**C)** It manages encryption keys  
+**D)** It stores ciphertexts on-chain
+
+**Answer: B** - The coprocessor performs computationally expensive FHE operations off-chain, while contracts run on-chain.
+
+## Question 7: Ciphertext Handles
+
+What is a ciphertext handle?
+
+**A)** The actual encrypted data blob  
+**B)** A uint256 reference pointing to encrypted data stored off-chain  
+**C)** A decryption key  
+**D)** An encryption function
+
+**Answer: B** - Handles are lightweight uint256 references; actual ciphertexts are stored off-chain in the ciphertext registry.
+
+## Question 8: Use Cases
+
+Which use case benefits most from FHE's encrypted state capability?
+
+**A)** One-time computation proofs (ZK better)  
+**B)** Multi-party threshold signing (MPC better)  
+**C)** Private voting with encrypted tallies  
+**D)** Hardware-secured computation (TEEs better)
+
+**Answer: C** - Private voting requires maintaining encrypted state (vote tallies) throughout the voting process, which FHE excels at.
+
+## Question 9: Access Control
+
+What happens if you don't call `FHE.allow()` after creating an encrypted value?
+
+**A)** The value is automatically decryptable by anyone  
+**B)** Users cannot decrypt the value  
+**C)** The value is deleted  
+**D)** The contract reverts
+
+**Answer: B** - Without calling `FHE.allow()`, users won't have permission to decrypt the value, making it unusable.
+
+## Question 10: CoFHE Components
+
+Which component stores the actual ciphertexts (encrypted data blobs)?
+
+**A)** FHE Library (FHE.sol)  
+**B)** Task Manager  
+**C)** Ciphertext Registry & Data Availability Layer  
+**D)** Threshold Network
+
+**Answer: C** - The Ciphertext Registry & Data Availability Layer stores the large encrypted data blobs off-chain.
+
+---
+
+## Summary
+
+If you answered most questions correctly, you understand:
+* The transparency limitations of Ethereum
+* What can and cannot be hidden with FHE
+* How different PETs compare
+* FHE's encrypted-in/encrypted-out paradigm
+* CoFHE's coprocessor architecture
+* Key concepts like handles, encrypted types, and access control
+
+**You should now be able to:** explain the transparency problem; describe CoFHE architecture, API boundaries, and glossary terms; and contrast what can and cannot be hidden on-chain.
+
+Ready to move on to Module 2, where you'll learn about encrypted types and operations in detail!

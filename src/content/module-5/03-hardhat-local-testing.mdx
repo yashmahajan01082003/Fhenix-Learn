@@ -1,0 +1,70 @@
+---
+title: "Hardhat Local Testing"
+type: "reading"
+---
+
+# Hardhat Local Testing
+
+For unit tests and local development, use the Hardhat plugin with mocks. No real CoFHE or Threshold Network required.
+
+## Setup
+
+```bash
+pnpm add -D @cofhe/hardhat-plugin
+```
+
+```ts
+// hardhat.config.ts
+import '@cofhe/hardhat-plugin';
+```
+
+## Batteries-Included Client
+
+```ts
+import hre from 'hardhat';
+import { Encryptable, FheTypes } from '@cofhe/sdk';
+
+const [signer] = await hre.ethers.getSigners();
+const client = await hre.cofhe.createClientWithBatteries(signer);
+```
+
+This creates config with `chains.hardhat`, connects the client, and creates a self permit automatically.
+
+## TestBed and Mocks
+
+```ts
+const testBed = await hre.cofhe.mocks.getTestBed();
+
+const [enc] = await client.encryptInputs([Encryptable.uint32(7n)]).execute();
+await testBed.setNumber(enc[0]);
+
+const ctHash = await testBed.numberHash();
+const unsealed = await client.decryptForView(ctHash, FheTypes.Uint32).execute();
+expect(unsealed).to.equal(7n);
+```
+
+## Reading plaintext directly (tests only)
+
+In Hardhat tests, the mock contracts store plaintext on-chain, so you can assert encrypted state without permits:
+
+```ts
+const plaintext = await hre.cofhe.mocks.getPlaintext(ctHash);
+await hre.cofhe.mocks.expectPlaintext(ctHash, 7n);
+```
+
+TestBed provides: `setNumber(InEuint32)`, `add(InEuint32)`, `increment()`, `numberHash()`, `getDecryptResultSafe`, `publishDecryptResult`.
+
+## Manual Config (Optional)
+
+```ts
+import { hardhat } from '@cofhe/sdk/chains';
+
+const config = await hre.cofhe.createConfig({
+  supportedChains: [hardhat],
+});
+const client = hre.cofhe.createClient(config);
+const { publicClient, walletClient } = await hre.cofhe.hardhatSignerAdapter(signer);
+await client.connect(publicClient, walletClient);
+```
+
+Use `chains.hardhat` for local mocks; other chains use production CoFHE endpoints.

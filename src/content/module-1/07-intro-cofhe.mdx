@@ -1,0 +1,204 @@
+---
+title: "Introducing CoFHE"
+type: "reading"
+---
+
+# 6. Introducing CoFHE
+
+CoFHE (Coprocessor for FHE) is Fhenix's implementation that brings Fully Homomorphic Encryption to Ethereum-compatible smart contracts. This section introduces how CoFHE works, its architecture, and the key concepts you'll need to build privacy-preserving smart contracts.
+
+## 6.1 ELIF: What is a Coprocessor? (Explain Like I'm Five)
+
+### Simple Analogy
+
+Imagine you're doing complex math homework. You could do it all by hand, but it would take forever and be error-prone. Instead, you use a calculator - a specialized tool that handles the math for you. You give it the numbers, it does the computation, and gives you the result.
+
+A **coprocessor** is like that calculator, but for your smart contract. Your contract needs to do FHE operations (complex encrypted math), but doing them directly on-chain would be too slow and expensive. So the contract asks the coprocessor to do the work, and the coprocessor returns the result.
+
+### What is a Coprocessor?
+
+A coprocessor is a specialized system that handles specific tasks that are too expensive for the main system to do directly. In CoFHE's case:
+
+* **Main system:** The EVM (Ethereum Virtual Machine) running your smart contract
+* **Specialized task:** FHE computation (homomorphic operations on encrypted data)
+* **Why needed:** FHE operations are computationally expensive - too slow and gas-intensive to run directly on-chain
+
+### Why Do We Need One?
+
+FHE operations require specialized computation that would be prohibitively expensive to run on every Ethereum node. The coprocessor model allows:
+
+* **On-chain contracts** - Your smart contract runs on Ethereum
+* **Off-chain computation** - Heavy FHE operations happen on specialized coprocessor nodes
+* **Efficient execution** - Only the results (handles) need to be stored on-chain
+
+Think of it like asking a specialized math tutor to solve complex problems - you don't need to learn all the advanced math yourself, you just need to know how to ask for help and understand the results.
+
+### How Does It Work?
+
+The basic flow is simple:
+
+1. **Smart contract needs FHE operation** - Your contract calls a function like `FHE.add(a, b)`
+2. **Contract sends request** - The contract emits an event signaling it needs computation
+3. **Coprocessor does the work** - Specialized FHE nodes pick up the event and perform the homomorphic computation
+4. **Result returned** - The coprocessor stores the result and returns a handle (reference) to your contract
+5. **Contract continues** - Your contract receives the handle and can use it in further operations
+
+### Basic Components/Architecture
+
+At the simplest level:
+
+* **On-chain:** Your smart contract (asks for help)
+* **Off-chain:** The coprocessor (does the heavy lifting)
+* **Communication:** Events/messages between them
+
+### Key Insight
+
+The contract never sees the actual encrypted data being computed. It operates on **handles** (references like `uint256`), while the coprocessor performs the actual computation on ciphertexts stored off-chain. This separation is what makes FHE practical on Ethereum.
+
+## 6.2 CoFHE Architecture Overview
+
+Building on the ELIF foundation, here's how CoFHE's architecture actually works:
+
+### On-Chain Components
+
+**FHE Library (FHE.sol)**
+* The Solidity library interface developers use
+* Provides functions like `FHE.add()`, `FHE.mul()`, `FHE.select()`, etc.
+* Converts between input types (`InEuintX`) and compute types (`euintX`)
+* Emits events when FHE operations are needed
+
+**Event Bus**
+* Mechanism for contracts to signal the coprocessor
+* When you call `FHE.add(a, b)`, the library emits an event describing the operation
+* Events are picked up by off-chain components
+
+### Off-Chain Components
+
+**FHEOS (FHE Operating System)**
+* The engine that performs actual homomorphic computation
+* Executes FHE operations on encrypted ciphertexts
+* Optimized for FHE performance
+
+**Task Manager**
+* Monitors the blockchain for FHE operation events
+* Picks up events emitted by contracts
+* Coordinates work between contracts and FHEOS
+* Manages the lifecycle of FHE operations
+
+**Ciphertext Registry & Data Availability Layer**
+* Stores the large encrypted data blobs (ciphertexts)
+* Ciphertexts are too large to store on-chain efficiently
+* Provides data availability guarantees
+* Maps handles (on-chain references) to actual ciphertexts (off-chain storage)
+
+**Threshold Network**
+* Manages decryption keys in a distributed manner
+* No single node holds the full decryption key
+* Enables secure decryption when authorized
+* Provides cryptographic security guarantees
+
+### How They Work Together
+
+Here's the complete flow:
+
+1. **Contract calls FHE Library function** - e.g., `FHE.add(a, b)` where `a` and `b` are `euint32` handles
+2. **Library emits event** - Event describes the operation and input handles
+3. **Task manager picks up event** - Monitors blockchain and sees the new event
+4. **FHEOS performs computation** - Retrieves ciphertexts from registry, performs homomorphic addition
+5. **Result stored in ciphertext registry** - New ciphertext created and stored
+6. **Contract receives handle** - New `uint256` handle returned to contract execution
+7. **Contract continues** - Handle can be stored, used in further operations, or authorized for decryption
+
+This hybrid architecture gives you the best of both worlds: the security and composability of on-chain smart contracts, with the performance of specialized off-chain FHE computation.
+
+**Note:** This is a high-level overview appropriate for Module 1.
+
+## 6.3 Key Concepts
+
+Understanding these concepts is essential for building with CoFHE:
+
+### Ciphertext Handles
+
+**What they are:**
+* `uint256` values that reference encrypted data stored off-chain
+* Not the actual ciphertexts (which are large and stored off-chain)
+* Lightweight references that can be stored efficiently on-chain
+
+**How they differ from ciphertexts:**
+* **Handles:** Small `uint256` references stored on-chain
+* **Ciphertexts:** Large encrypted data blobs stored off-chain in the ciphertext registry
+* **Mapping:** Handles point to ciphertexts in the registry
+
+When you store an `euint32` in your contract, you're storing a handle, not the actual encrypted data. The coprocessor uses the handle to look up the real ciphertext when performing operations.
+
+### Encrypted Types
+
+CoFHE provides encrypted versions of Solidity types:
+
+* **`euint8`, `euint16`, `euint32`, `euint64`, `euint128`, `euint256`** - Encrypted unsigned integers
+* **`ebool`** - Encrypted boolean
+* **`eaddress`** - Encrypted address
+
+These types represent encrypted values. They never hold plaintext; at contract level they are opaque handles to encrypted data.
+
+**Input types:**
+* **`InEuint8`, `InEuint16`, etc.** - Wrappers for encrypted inputs from users
+* Must be converted using `FHE.asEuintX()` before use in computations
+* Provide safety and validation for encrypted inputs
+
+**Note:** Module 2 will cover encrypted types in detail, including how to use them and what operations they support.
+
+### Operation Flow
+
+The complete flow from encryption to decryption:
+
+1. **Encrypt (client-side with @cofhe/sdk)** - User encrypts data using the CoFHE SDK
+2. **Send to contract** - Encrypted input sent as `InEuintX` wrapper
+3. **Contract uses FHE Library interface** - Contract calls `FHE.asEuintX()` to convert input
+4. **Coprocessor computes off-chain** - FHE operations performed by coprocessor
+5. **Result returned as handle** - Contract receives `uint256` handle
+6. **Decrypt (when authorized)** - User can decrypt result using @cofhe/sdk when they have permission
+
+This flow maintains encryption throughout - data is encrypted when it enters, stays encrypted during computation, and only decrypts when explicitly authorized.
+
+### Access Control
+
+CoFHE uses a permission system to control who can decrypt encrypted values:
+
+* **`FHE.allow(value, address)`** - Grant specific address access to decrypt a value
+* **`FHE.allowSender(value)`** - Grant the caller (msg.sender) access to decrypt
+* **`FHE.allowThis(value)`** - Grant the contract itself access (for future operations)
+* **`FHE.allowTransient(value, address)`** - Temporary access for single-transaction operations
+
+**Why this matters:** Encrypted values are useless without decryption access. You must explicitly grant access after operations, otherwise users won't be able to decrypt results.
+
+**Note:** Module 4 (Mental Models & Access Control) covers access control in detail.
+
+### Developer Abstraction
+
+CoFHE provides a clean developer experience:
+
+**On-chain (Solidity):**
+* **FHE Library (FHE.sol)** - Solidity library interface for FHE operations
+* Works like any Solidity library - import and use functions
+* Encrypted types integrate with Solidity's type system
+* No need to understand low-level FHE details
+
+**Client-side (JavaScript/TypeScript):**
+* **@cofhe/sdk** - JavaScript/TypeScript library for encryption, decryption, and permit management
+* Handles all client-side FHE operations
+* Manages encryption keys and permits
+* Provides simple API for encrypting inputs and decrypting outputs
+
+This abstraction means you can build privacy-preserving smart contracts without being an FHE cryptography expert. The complexity is hidden behind clean APIs.
+
+### Summary
+
+CoFHE brings FHE to Ethereum through:
+* **Coprocessor architecture** - Off-chain FHE computation, on-chain contract logic
+* **Handle-based system** - Lightweight on-chain references to off-chain ciphertexts
+* **Developer-friendly APIs** - FHE Library for Solidity, @cofhe/sdk for client-side
+* **Permission system** - Access control for decryption
+* **Encrypted types** - Solidity types that represent encrypted values
+
+This architecture makes it practical to build privacy-preserving smart contracts where data and computation remain encrypted throughout the entire lifecycle.

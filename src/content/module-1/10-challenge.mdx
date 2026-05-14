@@ -1,0 +1,86 @@
+---
+title: "Challenge: Encrypted Hello World"
+type: "sandbox"
+requiredPatterns: "contract HiddenValue, euint32 private val, function set, InEuint32 calldata, FHE.asEuint32, function get, returns (euint32), return val"
+successMessage: "Your HiddenValue contract is correctly structured! You've mastered encrypted state storage. 🎉"
+---
+
+# Challenge: Encrypted Hello World
+
+
+In this challenge, you will create your first privacy-preserving smart contract that stores encrypted data.
+
+## Learning Objectives
+
+This challenge reinforces:
+* Encrypted state storage using `euint32`
+* Converting encrypted inputs (`InEuint32`) to compute types
+* Understanding that storage contains handles, not plaintext
+* Basic FHE operations
+
+## Goal
+
+Create a contract that:
+1. Stores an encrypted `euint32` value
+2. Allows setting the value from encrypted input
+3. Demonstrates that the stored value is encrypted (a handle, not plaintext)
+
+## Starter Code
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.25;
+
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
+
+contract HiddenValue {
+    // Store an encrypted uint32 value
+    euint32 private val;
+    
+    // Set the encrypted value
+    function set(InEuint32 calldata encryptedInput) public {
+        // TODO: Convert the input wrapper to euint32 and store it
+        // Hint: Use FHE.asEuint32() to convert
+        
+        // TODO: Set ACL permissions so the value can be used
+        // Hint: Use FHE.allowThis(val) and FHE.allowSender(val)
+    }
+    
+    // Get the encrypted value (returns a handle, not plaintext!)
+    function get() public view returns (euint32) {
+        return val;
+    }
+}
+```
+
+## Steps
+
+1. **Complete the `set` function:**
+   - Convert `encryptedInput` from `InEuint32` to `euint32` using `FHE.asEuint32()`
+   - Store the result in `val`
+
+2. **Understand what's stored:**
+   - The `val` variable stores a `uint256` handle (reference)
+   - The actual ciphertext is stored off-chain in the ciphertext registry
+   - This is why FHE is practical - handles are small, ciphertexts are large
+
+3. **Test your contract:**
+   - Deploy the contract
+   - Call `set()` with an encrypted value
+   - Call `get()` - notice it returns an `euint32` handle, not a plaintext value
+
+## Key Concepts
+
+* **Encrypted state:** `euint32` represents an encrypted value stored as a handle
+* **Input conversion:** `InEuint32` wrappers must be converted using `FHE.asEuint32()`
+* **Handle vs ciphertext:** On-chain storage contains handles (uint256), ciphertexts are off-chain
+* **Privacy guarantee:** Even if someone reads the storage slot, they only see a handle, not the actual value
+
+## Next Steps
+
+Once you complete this challenge, you'll understand:
+- How encrypted state is stored in contracts
+- The difference between input types and compute types
+- That FHE enables private storage on public blockchains
+
+This foundation prepares you for Module 2, where you'll learn about encrypted operations and more complex FHE patterns.

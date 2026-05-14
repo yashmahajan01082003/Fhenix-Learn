@@ -1,0 +1,32 @@
+---
+title: "API Boundaries: Contract vs Client"
+type: "reading"
+---
+
+# API Boundaries: Contract vs Client
+
+Knowing what runs where avoids confusion and bugs. Here’s a concise split.
+
+## Contract responsibilities
+
+- **Storage:** Hold encrypted state as `euintX` / `ebool` (handles).
+- **Logic:** Use `FHE.*` for arithmetic, comparisons, and `FHE.select`; never branch on plaintext of encrypted values.
+- **ACL:** Grant who may decrypt or reuse handles: `allowThis`, `allowSender`, `allowTransient`, `allow`, `allowPublic`.
+- **Inputs:** Accept `InE*` structs from the client; convert with `FHE.asE*(...)`.
+- **Async decrypt:** When the contract needs plaintext, it relies on the client to call `decryptForTx`, then the contract uses `FHE.publishDecryptResult` or `FHE.verifyDecryptResult`; use `FHE.getDecryptResultSafe` for polling.
+
+## Client responsibilities
+
+- **Config and connection:** `createCofheConfig`, `createCofheClient`, `client.connect(publicClient, walletClient)`.
+- **Encryption:** `client.encryptInputs([...]).execute()` to produce payloads for contract `InE*` args.
+- **Decryption:** `decryptForView` (for UI; permit required) or `decryptForTx` (for on-chain publish/verify; permit depends on ACL).
+- **Permits:** Create and attach permits when the contract restricts decrypt to the user (e.g. `getOrCreateSelfPermit()`).
+- **ABI:** Use `@cofhe/abi` to transform encrypted return types and insert encrypted inputs into contract args.
+
+## Boundary rules
+
+- **No plaintext of encrypted values inside the contract** — only handles and FHE operations.
+- **No legacy SDK or `decryptHandle` in user-facing flows** — use `decryptForView` / `decryptForTx` only.
+- **Security zone** must be consistent between client encryption and contract if you use it.
+
+Keeping these boundaries clear will help you design contracts and clients that stay correct and maintainable.

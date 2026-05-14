@@ -1,0 +1,50 @@
+---
+title: "Decrypt and Permits"
+type: "reading"
+---
+
+# Decrypt and Permits
+
+## Two Decrypt Paths
+
+| API | Use Case | Permit? |
+|-----|----------|---------|
+| `decryptForView(ctHash, utype)` | Display plaintext in UI | Always required |
+| `decryptForTx(ctHash)` | Publish verifiably on-chain | Depends on contract ACL |
+
+## Decrypt for View (UI)
+
+```ts
+await client.permits.getOrCreateSelfPermit();
+
+const plaintext = await client
+  .decryptForView(ctHash, FheTypes.Uint32)
+  .execute();
+
+console.log(plaintext); // 42n
+```
+
+Always call `getOrCreateSelfPermit()` (or have an active permit) before `decryptForView`. For UI-only reads, always prefer `decryptForView` — do not use `decryptForTx` if you don't intend to publish/verify on-chain.
+
+## Decrypt for On-Chain Publish
+
+```ts
+// When contract allows anyone to decrypt (global ACL)
+const result = await client.decryptForTx(ctHash).withoutPermit().execute();
+
+// When contract restricts decrypt (needs permit)
+const result = await client.decryptForTx(ctHash).withPermit().execute();
+// or
+const result = await client.decryptForTx(ctHash).withPermit(permit).execute();
+```
+
+`result` includes `ctHash`, `decryptedValue`, `signature` for publishing to the contract.
+
+## Permits
+
+- **Create:** `client.permits.createSelf({ issuer, name })`
+- **Get or create:** `client.permits.getOrCreateSelfPermit()`
+- **Select active:** `client.permits.selectActivePermit(hash)`
+- **Remove:** `client.permits.removePermit(hash)`
+
+Permits are scoped to `(chainId, account)`. Switch permit when switching network or wallet.

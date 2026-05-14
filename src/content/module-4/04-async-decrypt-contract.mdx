@@ -1,0 +1,41 @@
+---
+title: "Contract-Side Async Decrypt"
+type: "reading"
+---
+
+# Contract-Side Async Decrypt
+
+When a contract needs plaintext, CoFHE uses an **off-chain decrypt + on-chain publish/verify** pattern. The client decrypts off-chain, then submits the plaintext + Threshold signature on-chain so the contract can publish or verify it.
+
+## Decrypt for Transaction (Publish/Verify)
+
+1. **Grant permissions (on-chain):** Use ACL to decide who can trigger decrypt (public vs restricted).
+2. **Decrypt off-chain (client):** `decryptForTx(ctHash).withPermit()/withoutPermit().execute()` returns `{ ctHash, decryptedValue, signature }`.
+3. **Publish or verify (on-chain):**
+   - `FHE.publishDecryptResult(ctHash, plaintext, signature)` to publish on-chain
+   - `require(FHE.verifyDecryptResult(ctHash, plaintext, signature), "Invalid decrypt signature")` to verify without publishing
+
+## Safe vs Unsafe
+
+- `getDecryptResultSafe(ctHash)` returns `(result, decrypted)`. Does not revert if not ready.
+- `getDecryptResult(ctHash)` reverts if not ready. Use only when you know it's ready.
+
+## Example Pattern
+
+```solidity
+// Step 1: Decide who can reveal (example: allow anyone to trigger reveal)
+FHE.allowPublic(highestBid);
+
+// Step 2: Later, a tx provides (ctHash, plaintext, signature)
+FHE.publishDecryptResult(highestBid, plaintext, signature);
+
+// Step 3 (optional): read readiness/value if your protocol needs it
+(uint256 value, bool decrypted) = FHE.getDecryptResultSafe(highestBid);
+if (!decrypted) revert DecryptionNotReady();
+```
+
+## Client orchestration
+
+The client calls `decryptForTx(ctHash).withPermit()` or `.withoutPermit().execute()` (depending on ACL) to obtain `{ ctHash, decryptedValue, signature }`, then submits a transaction that calls `FHE.publishDecryptResult(ctHash, decryptedValue, signature)` or the contract verifies with `FHE.verifyDecryptResult(ctHash, decryptedValue, signature)`.
+
+Treat "decrypt result not ready" as a normal state. If your UI depends on the published result being readable on-chain, poll a view that uses `FHE.getDecryptResultSafe(...)` until `decrypted == true`.

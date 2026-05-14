@@ -1,0 +1,31 @@
+---
+title: "ACL Basics"
+type: "reading"
+---
+
+# ACL Basics
+
+Access control on ciphertext handles determines **who** can decrypt or reuse a handle. CoFHE uses an ACL (access control list) model that you set in your contract.
+
+## Why ACL?
+
+Encrypted values are stored as **handles** on-chain. By default, a newly created handle has **transaction-scoped** usability: it can be used in the same transaction. For a handle to be decrypted later by a client, or reused in a later transaction, the contract must **grant** access explicitly.
+
+## Transient vs persistent
+
+- **Transient:** Permission lasts only for the **current transaction**. Use `allowTransient(handle, address)` when passing a handle to another contract in the same tx and you do not want it to be reused or decrypted later.
+- **Persistent:** Permission **survives** the transaction. Use `allowThis`, `allowSender`, `allow`, or `allowPublic` when the contract or a specific user (or everyone) should be able to decrypt or use the handle later.
+
+## Key functions (high-level)
+
+- **allowThis(handle):** The same contract can read or use the handle in later calls.
+- **allowSender(handle):** The transaction sender can later decrypt (or use) the handle; the client will need a permit.
+- **allow(handle, account):** Grant a specific address access.
+- **allowTransient(handle, account):** Same-tx only; no persistence.
+- **allowPublic(handle):** Marks a handle as eligible for public decryption request flow. This does not reveal immediately.
+
+## Decryption and ACL
+
+Off-chain decryption via the SDK (`decryptForView` or `decryptForTx`) only succeeds if the contract has granted the requester access to that handle. If the contract used `allowSender`, the client must supply a permit (e.g. `getOrCreateSelfPermit()`). If the contract used a public/global grant, the client may call decrypt without a permit (e.g. `decryptForTx(ctHash).withoutPermit().execute()`).
+
+You will see the full access model and permit requirements in Module 4 (Mental Models & Access Control).

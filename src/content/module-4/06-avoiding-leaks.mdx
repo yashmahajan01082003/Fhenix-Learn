@@ -1,0 +1,43 @@
+---
+title: "Avoiding Information Leaks"
+type: "reading"
+---
+
+# Avoiding Information Leaks
+
+Even with encryption, metadata can leak information.
+
+## What FHE Hides vs What It Does Not
+
+FHE protects plaintext values and encrypted computation inputs/outputs. It does **not** automatically hide all metadata around your application flow.
+
+What can still leak if you design poorly:
+
+- Which contract functions are called
+- When values are published on-chain
+- Access-control choices (`allowPublic` vs restricted ACL)
+- Observable app behavior around retries/loading/error handling
+
+## Common Leakage Risks
+
+- **Branching on decrypted data**: Reveals decision logic and usually leaks sensitive information.
+- **Publishing plaintext unnecessarily**: `publishDecryptResult` makes data public forever.
+- **Over-broad ACL grants**: Public grants where restricted access was intended.
+- **Misleading UI fallbacks**: Showing fake defaults when decrypt is blocked can confuse users and operators.
+
+## Mitigation Strategies (Canonical)
+
+1. **Use `FHE.select` for encrypted conditionals** instead of plaintext branching.
+2. **Prefer `decryptForView` for UI-only needs**; use `decryptForTx` + publish/verify only when protocol logic requires it.
+3. **Apply least-privilege ACL**:
+   - `allowThis` for contract reuse
+   - `allow` / `allowSender` for restricted users
+   - `allowPublic` only when value is intentionally revealable
+4. **Model async states explicitly** in frontend (pending, decrypting, ready, failed) instead of masking errors.
+
+## Checklist Before Shipping
+
+- No `if/else` on encrypted conditions.
+- No unnecessary `publishDecryptResult`.
+- ACL grants are intentional and minimal.
+- UI clearly distinguishes "not decrypted yet" from real numeric zero.

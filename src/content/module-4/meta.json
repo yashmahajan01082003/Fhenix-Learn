@@ -1,0 +1,7 @@
+{
+    "title": "Mental Models & Access Control",
+    "description": "FHE mindset, branching and leakage, async decrypt, and ACL permissions (allowThis, allowSender, allowTransient; permit–decrypt relationship).",
+    "difficulty": "Advanced",
+    "estimatedHours": 4,
+    "slug": "mental-models-access-control"
+}

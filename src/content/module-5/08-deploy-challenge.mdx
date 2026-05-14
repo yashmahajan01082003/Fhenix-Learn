@@ -1,0 +1,31 @@
+---
+title: "Challenge: Deploy End-to-End"
+type: "reading"
+---
+
+# Challenge: Deploy End-to-End
+
+**Type:** Deploy a working flow
+
+**Goal:** Successfully run the full encrypt → write → read → decrypt flow on Arbitrum Sepolia with a minimal confidential contract and client (script or React).
+
+## Requirements
+
+1. Deploy a simple confidential contract (e.g. store/retrieve one encrypted value).
+2. Use `@cofhe/sdk` with `chains.arbSepolia`.
+3. Encrypt a value, write to the contract.
+4. Read the encrypted handle from the contract.
+5. Decrypt with `decryptForView` and confirm the result matches.
+
+## Success Criteria
+
+- Contract deployed on Arb Sepolia (421614).
+- Client connects, creates permit, encrypts, writes.
+- Client reads handle and decrypts successfully.
+- No `NotConnected`, `PermitNotFound`, or `UnsupportedChain` errors when following the flow.
+
+## Optional (Non-Blocking)
+
+- Add `decryptForTx` + `publishDecryptResult` and verify on-chain.
+
+**You should now be able to:** use the FHERC20 operator model (no approve/allowance); triage errors (permit vs config vs decrypt); run Hardhat local testing; and deploy and verify a full encrypt → write → read → decrypt flow.

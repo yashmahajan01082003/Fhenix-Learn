@@ -1,0 +1,24 @@
+---
+title: "Full Flow: Encrypt → Write → Read → Decrypt"
+type: "reading"
+---
+
+# Full Flow: Encrypt → Write → Read → Decrypt
+
+## End-to-End on Arbitrum Sepolia
+
+1. **Connect:** `client.connect(publicClient, walletClient)` with Arb Sepolia clients.
+2. **Permit:** `await client.permits.getOrCreateSelfPermit()`.
+3. **Encrypt:** `const [enc] = await client.encryptInputs([Encryptable.uint32(100n)]).execute()`.
+4. **Write:** `await contract.setValue(enc)` (or equivalent).
+5. **Read:** `const ctHash = await contract.getValue()` — if the contract transforms the handle on-chain, fetch `ctHash` from the contract after write; don't assume the client-held value matches.
+6. **Decrypt (UI):** `const plain = await client.decryptForView(ctHash, FheTypes.Uint32).execute()`.
+7. **Decrypt (on-chain):** `const result = await client.decryptForTx(ctHash).withPermit().execute()` (or `.withoutPermit()` if the contract used `FHE.allowPublic`). Then submit a tx that calls `FHE.publishDecryptResult(...)` or `FHE.verifyDecryptResult(...)` inside your contract.
+
+## Note on ctHash
+
+After writes that perform FHE ops, the resulting handle may differ from the input. Always read the handle from the contract when needed for decrypt.
+
+## Testnet Reference
+
+Canonical testnet flow examples: `cofhesdk/packages/hardhat-plugin-test/test/integration-base-sepolia.test.ts` (Base Sepolia; same pattern for Arb Sepolia with `chains.arbSepolia`).

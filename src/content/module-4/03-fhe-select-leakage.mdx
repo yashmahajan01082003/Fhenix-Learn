@@ -1,0 +1,32 @@
+---
+title: "FHE.select and Leakage"
+type: "reading"
+---
+
+# FHE.select and Leakage
+
+## Encrypted Conditionals
+
+Do **not** branch on encrypted values with plaintext `if/else`. Use `FHE.select`:
+
+```solidity
+ebool condition = FHE.eq(a, b);
+euint64 result = FHE.select(condition, valueIfTrue, valueIfFalse);
+```
+
+Both branches are evaluated. Use only when both sides are safe.
+
+## Leakage Boundaries
+
+- **Branch side effects** — Avoid heavy or asymmetric logic in branches. Events, storage writes, and external calls can leak information.
+- **Don't decrypt-to-branch** — Using decrypt just to decide control flow reveals plaintext. Use async decrypt only when the reveal is intended and documented.
+- **Narrow grants** — Over-granting ACL expands who can operate/decrypt handles. Scope grants to the minimum needed.
+
+## Public vs Encrypted State
+
+Split design intentionally:
+
+- **Public:** Game metadata, participant lists, status.
+- **Encrypted:** Entropy, secrets, balances, assignments.
+
+Treat public compatibility signals (e.g. FHERC20 "indicated balance") as UX metadata only — not inputs to contract logic.

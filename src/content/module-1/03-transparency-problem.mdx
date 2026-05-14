@@ -1,0 +1,112 @@
+---
+title: "The Transparency Problem on Ethereum"
+type: "reading"
+---
+
+# 1. Ethereum's Transparency Problem
+
+Ethereum was designed for *verifiable* computation, not *private* computation.
+This means every step of a smart contract's execution is visible to everyone observing the chain—including users, operators, competitors, adversaries, or bots.
+
+Understanding the transparency problem is core to understanding why FHE matters.
+
+## 1.1 Storage Is Public
+
+All state variables—public, internal, private—are readable via \`eth_getStorageAt\`.
+
+This reveals:
+* account balances
+* strategy parameters
+* vault positions
+* auction bids
+* game state
+* internal state machines
+* anything stored in contract storage
+
+"Private" variables in Solidity only restrict access from other contracts, not from observers.
+
+## 1.2 Events Are Public
+
+Every emitted event becomes part of the permanent log history:
+* parameters
+* indexed fields
+* metadata
+* transaction context
+
+Events are globally visible and indexed by block explorers. Even if an event carries an encrypted value, its existence, ordering, and correlation leak information.
+
+## 1.3 Branching Reveals Logic Paths
+
+EVM branching (if/else, require) leaks information because:
+* different branches use different gas
+* different branches write different storage
+* reverts vs success reveal condition results
+* even silent conditions leave side effects
+
+An attacker can infer:
+* whether a condition was true
+* whether a user's balance exceeded a value
+* whether a check failed
+* whether a threshold was crossed
+
+This makes *conditional privacy* impossible under normal Solidity semantics.
+
+## 1.4 Gas Usage and Timing Leak Secrets
+
+Gas differences reveal which code path executed:
+* expensive vs cheap operations
+* loops with different iterations
+* storage writes vs no writes
+* internal calls
+
+Timing leaks occur through:
+* mempool visibility
+* block inclusion delays
+* the time between successive dependent calls
+
+These leak high-level information about user behavior even when values themselves are absent.
+
+## 1.5 Calldata Exposes All Inputs
+
+Plaintext calldata exposes:
+* amounts
+* targets
+* routing parameters
+* internal logic
+* user strategies
+* function parameters
+* any data sent to the contract
+
+This is what makes MEV extraction possible.
+
+## 1.6 Mempool and MEV Attacks
+
+Before transactions are included in blocks, they sit in the mempool where:
+* **Anyone can see pending transactions** - bots monitor mempool for opportunities
+* **MEV extraction** - frontrunning, backrunning, and sandwich attacks exploit visible transaction data
+* **Order flow leakage** - transaction ordering reveals user intent and strategies
+* **Price impact prediction** - visible swaps allow bots to predict and exploit price movements
+
+Even if your contract logic is private, the mempool reveals what you're trying to do before it happens.
+
+## 1.7 Metadata Leaks
+
+Beyond the transaction itself, metadata leaks information:
+* **Transaction timing** - when transactions occur reveals patterns (salary payments, trading windows)
+* **Transaction frequency** - how often someone interacts reveals activity levels
+* **Gas prices** - willingness to pay higher gas reveals urgency or value
+* **Transaction relationships** - linking addresses through common patterns reveals connections
+* **Block position** - where in a block a transaction appears can leak information
+* **Failed transactions** - even reverts leak information about attempted operations
+
+These metadata patterns can be analyzed to infer private information even when transaction data itself is encrypted.
+
+### Summary
+
+Ethereum's openness guarantees censorship resistance and verifiability, but it fundamentally prevents:
+* private inputs
+* private logic
+* private state
+* private outputs
+
+To fix this, the ecosystem developed different classes of PETs.

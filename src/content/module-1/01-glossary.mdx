@@ -1,0 +1,25 @@
+---
+title: "Glossary"
+type: "reading"
+---
+
+# Glossary
+
+CoFHE lets you build **confidential dApps** — private balances, sealed-bid auctions, confidential voting, and game state that stays hidden until intentionally revealed. This glossary defines the terms you'll use across contracts, client, and mental models.
+
+| Term | Definition |
+|------|------------|
+| **Ciphertext handle** | Opaque identifier for an encrypted value. ACL and decrypt flows operate on handles; contracts store handles and pass them to `FHE.*` helpers. |
+| **e\*** (e.g. `euint64`, `ebool`, `eaddress`) | Solidity encrypted types used in contract APIs and storage. Behave as encrypted handles backed by the TaskManager. |
+| **InE\*** (e.g. `InEuint64`, `InEbool`, `InEaddress`) | Solidity input structs carrying client-encrypted payloads into contracts. Produced by `@cofhe/sdk` encryption and converted in Solidity via `FHE.asE*`. |
+| **Permit** | Client-side authorization artifact used in SDK decrypt flows. Required for `decryptForView`; sometimes for `decryptForTx` depending on ACL. Created via `client.permits.getOrCreateSelfPermit()` or imported. |
+| **decryptForView** | Client API: decrypt a handle for UI display. Always requires a permit. Returns plaintext locally; never used directly by contracts. |
+| **decryptForTx** | Client API: decrypt for on-chain publish. Returns `{ ctHash, decryptedValue, signature }` for use with `FHE.publishDecryptResult` / `FHE.verifyDecryptResult`. Use `.withPermit()` or `.withoutPermit()` based on ACL. |
+| **Transient ACL** (`allowTransient`) | Transaction-scoped permission to use a ciphertext handle; intended for same-transaction collaboration and not persistent reuse. |
+| **Persistent ACL** (`allow`, `allowThis`, `allowSender`, `allowPublic`) | Permission grants that survive transaction boundaries or broaden access; part of the confidentiality boundary. Use carefully, especially `allowPublic`. |
+| **ACL** | Access control on ciphertext handles. Controls who can operate on and decrypt handles via `FHE.*` helpers and SDK permits. |
+| **Security zone** | Encrypted-input/randomness parameter carried through CoFHE encryption payloads. Keep it consistent between client generation and contract expectations when used. |
+| **Safe-read pattern** | Contract pattern using `FHE.getDecryptResultSafe(...)` to check readiness and retrieve decrypted results without reverting when they are not yet available. Ideal for polling UIs and async decrypt flows. |
+
+> **Note:** Legacy APIs like `decryptHandle` are deprecated for new content. Use `@cofhe/sdk` (`decryptForView` / `decryptForTx`) and `@fhenixprotocol/cofhe-contracts/FHE.sol` only.
+

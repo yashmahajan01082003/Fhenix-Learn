@@ -1,0 +1,59 @@
+---
+title: "Provider Setup"
+type: "reading"
+---
+
+# Provider Setup
+
+This lesson follows the official SDK setup path for React apps: use `@cofhe/sdk/web` directly with your existing viem or wagmi clients.
+
+## Install
+
+```bash
+npm install @cofhe/sdk viem
+```
+
+If you use wagmi, keep using your existing wagmi clients and pass them to the CoFHE client.
+
+## Create config and client
+
+```typescript
+import { createCofheConfig, createCofheClient } from "@cofhe/sdk/web";
+import { chains } from "@cofhe/sdk/chains";
+
+const config = createCofheConfig({
+  supportedChains: [chains.arbSepolia],
+});
+
+export const cofheClient = createCofheClient(config);
+```
+
+## Connect using existing clients
+
+```typescript
+await cofheClient.connect(publicClient, walletClient);
+```
+
+Use the same `publicClient` / `walletClient` objects your app already uses for chain reads and writes.
+
+## React usage pattern
+
+```tsx
+import { useEffect } from "react";
+import { usePublicClient, useWalletClient } from "wagmi";
+import { cofheClient } from "./cofhe";
+
+export function CofheConnectionGate({ children }) {
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+
+  useEffect(() => {
+    if (!publicClient || !walletClient) return;
+    void cofheClient.connect(publicClient, walletClient);
+  }, [publicClient, walletClient]);
+
+  return children;
+}
+```
+
+> **Note:** `@cofhe/react` is still documented as in development in official docs. Use `@cofhe/sdk/web` as the canonical production path for this curriculum.

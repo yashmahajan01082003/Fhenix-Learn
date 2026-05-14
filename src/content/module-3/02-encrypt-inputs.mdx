@@ -1,0 +1,44 @@
+---
+title: "Encrypt Inputs"
+type: "reading"
+---
+
+# Encrypt Inputs
+
+Use `client.encryptInputs(...).execute()` to produce `InE*` tuples for your contract.
+
+## Basic Usage
+
+```ts
+import { Encryptable, FheTypes } from "@cofhe/sdk";
+
+const [encrypted] = await client
+  .encryptInputs([Encryptable.uint32(42n)])
+  .execute();
+
+// Pass encrypted to contract as InEuint32
+await contract.setValue(encrypted);
+```
+
+## Encryptable Types
+
+- `Encryptable.bool(true)`
+- `Encryptable.uint8(n)`, `Encryptable.uint16(n)`, `Encryptable.uint32(n)`, `Encryptable.uint64(n)`, `Encryptable.uint128(n)`
+- `Encryptable.address("0x...")`
+- `Encryptable.create(type, value)` for dynamic type strings
+
+## Multiple Values
+
+```ts
+const [encA, encB] = await client
+  .encryptInputs([Encryptable.uint32(10n), Encryptable.uint64(100n)])
+  .execute();
+```
+
+## Builder Options
+
+- `.setAccount(account)` — Account that will use the encrypted inputs
+- `.setChainId(chainId)` — Chain that will consume them
+- `.onStep((step, context) => {...})` — Progress callback for UX
+
+Keys are loaded automatically during `execute()`. No manual key setup.

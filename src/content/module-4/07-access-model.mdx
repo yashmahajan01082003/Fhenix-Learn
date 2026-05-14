@@ -1,0 +1,28 @@
+---
+title: "CoFHE Access Model"
+type: "reading"
+---
+
+# CoFHE Access Model
+
+Controlling who can view decrypted data is paramount.
+
+## Ciphertext Handles and ACL
+
+CoFHE operations are access-controlled at the **ciphertext-handle** level. Newly created handles have **transaction-scoped** usability by default; persistent reuse requires explicit grants.
+
+- **allowThis(handle)** — After creating or mutating encrypted state the contract must read later, grant the contract itself access.
+- **allowSender(handle)** / **allow(handle)** — User-specific access when a user must later decrypt or reuse the handle.
+- **allowTransient(handle, account)** — Prefer for same-transaction collaboration with a specific address instead of persistent grants.
+- **allowPublic(handle)** — Marks a handle as eligible for public decryption request flow. This does not reveal immediately.
+
+## Decryption and Permits
+
+Off-chain decryption requires **ACL permission** on the ciphertext handle. Contracts decide whether the value is publicly revealable (`allowPublic`) or restricted.
+
+- **decryptForView(ctHash, utype)** — For UI display; **permit always required** (e.g. `getOrCreateSelfPermit()`).
+- **decryptForTx(ctHash)** — For on-chain publish; use `.withPermit()` or `.withoutPermit()` depending on whether ACL restricts to permit holders.
+
+## View Keys and Contract Modifiers
+
+Fhenix uses a permit system: users sign a permit to authorize decryption. Use contract-level access (e.g. `onlyOwner` or custom modifiers) to restrict who can trigger decrypt flows where appropriate.

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
-import { CURRICULUM } from '@/components/learn/curriculum';
+import { createPageUrl, createLessonUrl } from '@/utils';
+import { loadCurriculum } from '@/lib/curriculum-loader';
 import ModuleCard from '@/components/modules/ModuleCard';
 import ModulePathItem from '@/components/learn/ModulePathItem';
 import BadgeStrip from '@/components/learn/BadgeStrip';
@@ -13,10 +13,11 @@ import { useUserProgress } from '@/components/UserProgressContext';
 export default function Learn() {
   const navigate = useNavigate();
   const { user, progress, loading } = useUserProgress();
+  const CURRICULUM = loadCurriculum();
 
   const handleModuleClick = (module) => {
     const firstLesson = module.lessons[0];
-    navigate(`${createPageUrl('Lesson')}?module=${module.slug}&lesson=${firstLesson.id}`);
+    navigate(createLessonUrl(module, firstLesson));
   };
 
   if (loading) return null;
@@ -38,7 +39,7 @@ export default function Learn() {
     const isLocked = moduleIndex > 0 && !progress?.completed_modules?.includes(prevModule.id);
     
     if (incompleteLesson && !isLocked) {
-      nextLessonUrl = `${createPageUrl('Lesson')}?module=${module.slug}&lesson=${incompleteLesson.id}`;
+      nextLessonUrl = createLessonUrl(module, incompleteLesson);
       nextLessonTitle = `Continue: ${incompleteLesson.title}`;
       break;
     }
@@ -47,12 +48,12 @@ export default function Learn() {
   if (!nextLessonUrl && CURRICULUM.length > 0) {
       if (!progress || progress.completed_lessons.length === 0) {
           const firstMod = CURRICULUM[0];
-          nextLessonUrl = `${createPageUrl('Lesson')}?module=${firstMod.slug}&lesson=${firstMod.lessons[0].id}`;
+          nextLessonUrl = createLessonUrl(firstMod, firstMod.lessons[0]);
           nextLessonTitle = "Start: " + firstMod.lessons[0].title;
       } else {
            const lastMod = CURRICULUM[CURRICULUM.length - 1];
            const lastLesson = lastMod.lessons[lastMod.lessons.length - 1];
-           nextLessonUrl = `${createPageUrl('Lesson')}?module=${lastMod.slug}&lesson=${lastLesson.id}`;
+           nextLessonUrl = createLessonUrl(lastMod, lastLesson);
            nextLessonTitle = "Review: " + lastLesson.title;
       }
   }
@@ -178,18 +179,24 @@ export default function Learn() {
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-white mb-6">Sandboxes & Tools</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <PlaygroundCard 
-              title="Encryption Playground" 
-              description="Experiment with client-side encryption using cofhejs before sending to chain."
-            />
-            <PlaygroundCard 
-              title="FHE Operations" 
-              description="Test basic homomorphic operations like add, sub, and bitwise logic."
-            />
-             <PlaygroundCard 
-              title="Permission Generator" 
-              description="Generate and sign access permits to view encrypted state."
-            />
+            <Link to="/encryption-playground" className="block transform hover:-translate-y-2 transition-all duration-300">
+              <PlaygroundCard
+                title="Encryption Playground"
+                description="Experiment with client-side encryption using the CoFHE SDK before sending to chain."
+              />
+            </Link>
+            <Link to="/branching-simulator" className="block transform hover:-translate-y-2 transition-all duration-300">
+              <PlaygroundCard
+                title="Encrypted Branching"
+                description="Visualize how FHE.select() replaces if/else logic with oblivious execution."
+              />
+            </Link>
+            <Link to="/leak-detector" className="block transform hover:-translate-y-2 transition-all duration-300">
+              <PlaygroundCard
+                title="Leak Detector"
+                description="Spot the security flaws in this interactive FHE audit game."
+              />
+            </Link>
           </div>
         </div>
 
