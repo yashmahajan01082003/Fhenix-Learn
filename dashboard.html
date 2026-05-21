@@ -665,6 +665,30 @@
             font-size: 0.92rem;
         }
 
+        /* Quick action buttons in topbar */
+        .quick-actions { display: inline-flex; gap: 8px; align-items: center; margin-right: 6px; }
+        .icon-btn {
+            width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02); color: var(--text); font-weight: 700; cursor: pointer;
+            display: inline-grid; place-items: center; transition: transform .14s ease, background .14s ease;
+        }
+        .icon-btn:hover { transform: translateY(-3px); background: rgba(96,165,250,0.08); }
+
+        /* Toast notification */
+        .toast { position: fixed; right: 28px; bottom: 28px; background: rgba(7,17,33,0.95); color: var(--text); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(96,165,250,0.12); box-shadow: 0 14px 40px rgba(4,13,27,0.4); display: none; z-index: 60; }
+
+        /* Modal for user details */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(3,7,18,0.6); display: none; align-items: center; justify-content: center; z-index: 80; }
+        .modal { width: min(760px, 96%); background: linear-gradient(180deg, rgba(8,14,26,0.98), rgba(10,18,32,0.98)); border-radius: 18px; padding: 22px; border: 1px solid rgba(96,165,250,0.12); box-shadow: 0 30px 80px rgba(4,13,27,0.5); color: var(--text); }
+        .modal h3 { margin-bottom: 10px; }
+        .modal .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+        .modal .meta .pill { background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px; font-weight: 700; }
+        .modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px }
+
+        /* Table row hover action */
+        table tr { cursor: pointer; }
+        table tr td .copy { margin-left: 8px; opacity: 0.75; font-size: 0.85rem; cursor: pointer; }
+
         .glow-circle {
             position: fixed;
             pointer-events: none;
@@ -768,6 +792,16 @@
                     <strong>Status</strong>
                     <span>Ready</span>
                 </div>
+                <div class="quick-actions">
+                    <button class="icon-btn" title="Refresh dashboard" onclick="refreshDashboard()">⟲</button>
+                    <button class="icon-btn" title="Export CSV" onclick="exportCSV()">⬇︎</button>
+                    <button
+                        id="autoRefreshBtn"
+                        class="icon-btn"
+                        title="Toggle auto-refresh"
+                        onclick="toggleAutoRefresh()"
+                    >⏱</button>
+                </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -809,7 +843,7 @@
                         </div>
                         <div class="status-pill">Connected</div>
                     </div>
-                    <p class="hero-copy">This dashboard is designed for professional administrators and operations teams. Review the latest engagement trends, completion velocity, and API access instructions without leaving a single elegant interface.</p>
+                    <p class="hero-copy">Fast overview of engagement, completion velocity, and on-chain minting.</p>
                     <div class="summary-pills">
                         <span class="summary-pill">
                             Secure session
@@ -830,7 +864,7 @@
                     <div class="dashboard-main">
                         <section class="section-card">
                             <h2>Platform Insights</h2>
-                            <p>High-level system metrics give you a precise overview of learner performance and badge mint flow.</p>
+                            <p>Overview of learner trends and mint pipeline.</p>
                             <div class="charts-grid">
                                 <div class="chart-card">
                                     <h3>XP Distribution</h3>
@@ -973,6 +1007,29 @@ console.log(data);
                 </div>
             </main>
         </div>
+        <!-- Interactive modal for user details -->
+        <div id="modalBackdrop" class="modal-backdrop" onclick="closeUserModal(event)">
+            <div
+                class="modal"
+                role="dialog"
+                aria-modal="true"
+                onclick="event.stopPropagation()"
+            >
+                <h3 id="modalName">User details</h3>
+                <div class="meta">
+                    <div id="modalWallet" class="pill"></div>
+                    <div id="modalXP" class="pill"></div>
+                    <div id="modalBadges" class="pill"></div>
+                </div>
+                <div id="modalBody" style="font-family: ui-monospace, monospace; color: #cfe9ff; white-space:pre-wrap;"></div>
+                <div class="actions">
+                    <button class="test-btn" onclick="copyModalWallet()">Copy Wallet</button>
+                    <button class="test-btn" onclick="viewOnExplorer()">View on Explorer</button>
+                    <button class="logout-btn" style="margin-left:8px" onclick="closeUserModal()">Close</button>
+                </div>
+            </div>
+        </div>
+        <div id="toast" class="toast"></div>
         <div class="glow-circle glow-1"></div>
         <div class="glow-circle glow-2"></div>
         <div class="glow-circle glow-3"></div>
@@ -984,6 +1041,87 @@ console.log(data);
             let currentPage = 1;
             const itemsPerPage = 20;
             let charts = {};
+            let autoRefreshId = null;
+            let autoRefreshOn = false;
+
+            function showToast(message, timeout = 3000) {
+                const t = document.getElementById('toast');
+                t.textContent = message;
+                t.style.display = 'block';
+                clearTimeout(t._hide);
+                t._hide = setTimeout(() => t.style.display = 'none', timeout);
+            }
+
+            function refreshDashboard() {
+                showToast('Refreshing dashboard...');
+                if (authToken) loadDashboard(); else showToast('Not authenticated',2000);
+            }
+
+            function exportCSV() {
+                if (!dashboardData) return showToast('No data to export');
+                const rows = [['Name','Wallet','XP','Badges','Modules','Lessons','Last TX']];
+                dashboardData.users.forEach(u => rows.push([u.display_name||'Anonymous', u.wallet_address||'', u.xp||0, u.badges_count||0, u.modules_completed||0, u.lessons_completed||0, u.last_tx_hash||'']));
+                const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'fhenix_users.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+                showToast('CSV exported');
+            }
+
+            function toggleAutoRefresh() {
+                autoRefreshOn = !autoRefreshOn;
+                const btn = document.getElementById('autoRefreshBtn');
+                btn.style.background = autoRefreshOn ? 'rgba(96,165,250,0.12)' : '';
+                if (autoRefreshOn) {
+                    autoRefreshId = setInterval(() => { if (authToken) loadDashboard(); }, 30000);
+                    showToast('Auto-refresh enabled (30s)');
+                } else {
+                    clearInterval(autoRefreshId); autoRefreshId = null; showToast('Auto-refresh disabled');
+                }
+            }
+
+            function animateNumber(el, toValue, duration = 900) {
+                const start = +el.textContent.replace(/[, ]/g,'') || 0;
+                const diff = (toValue - start);
+                const startTime = performance.now();
+                function step(now) {
+                    const t = Math.min(1, (now - startTime) / duration);
+                    el.textContent = Math.round(start + diff * t).toLocaleString();
+                    if (t < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+
+            function openUserModal(idx) {
+                const user = filteredUsers[idx];
+                if (!user) return;
+                document.getElementById('modalName').textContent = user.display_name || 'Anonymous';
+                document.getElementById('modalWallet').textContent = `Wallet: ${formatAddress(user.wallet_address)}`;
+                document.getElementById('modalXP').textContent = `XP: ${(user.xp||0).toLocaleString()}`;
+                document.getElementById('modalBadges').textContent = `Badges: ${user.badges_count||0}`;
+                document.getElementById('modalBody').textContent = `User ID: ${user.user_id || 'n/a'}\nWallet: ${user.wallet_address || 'n/a'}\nXP: ${user.xp||0}\nBadges: ${user.badges_count||0}\nModules: ${user.modules_completed||0}\nLessons: ${user.lessons_completed||0}\nLast TX: ${user.last_tx_hash||'n/a'}`;
+                document.getElementById('modalBackdrop').style.display = 'flex';
+                // store last opened wallet for copy/view actions
+                document.getElementById('modalBackdrop').dataset.wallet = user.wallet_address || '';
+            }
+
+            function closeUserModal(e) {
+                if (e && e.target && e.target.id !== 'modalBackdrop') return; // only backdrop clicks or explicit call
+                document.getElementById('modalBackdrop').style.display = 'none';
+            }
+
+            function copyModalWallet() { const w = document.getElementById('modalBackdrop').dataset.wallet || ''; copyToClipboard(w); }
+
+            function viewOnExplorer() {
+                const w = document.getElementById('modalBackdrop').dataset.wallet || ''; if (!w) return showToast('No wallet');
+                const url = `https://etherscan.io/address/${w}`;
+                window.open(url, '_blank');
+            }
+
+            function copyToClipboard(val) {
+                if (!val) return showToast('Nothing to copy');
+                navigator.clipboard?.writeText(val).then(()=>showToast('Copied to clipboard')).catch(()=>showToast('Copy failed'));
+            }
 
             function testLoginEndpoint() {
                 const username = document.getElementById('loginUsername').value;
@@ -1107,6 +1245,14 @@ console.log(data);
                         <div class="detail">${card.note}</div>
                     </div>
                 `).join('');
+
+                // animate KPI numbers
+                const valueEls = Array.from(document.querySelectorAll('#aggregates .kpi-card .value'));
+                valueEls.forEach((el, i) => {
+                    const raw = cards[i]?.value ?? '0';
+                    const num = Number(String(raw).replace(/[^0-9.-]+/g, '')) || 0;
+                    animateNumber(el, num);
+                });
 
                 document.getElementById('mintedBadgesValue').textContent = mintedBadgesValue;
                 document.getElementById('badgeHoldersValue').textContent = agg.totalBadgeHolders ?? 0;
@@ -1233,15 +1379,15 @@ console.log(data);
                         const rank = start + idx + 1;
                         const rankClass = rank === 1 ? 'rank-high' : rank <= 3 ? 'rank-mid' : 'rank-low';
                         return `
-                            <tr>
+                            <tr onclick="openUserModal(${start + idx})">
                                 <td class="${rankClass}">#${rank}</td>
                                 <td>${user.display_name || 'Anonymous'}</td>
                                 <td><span class="badge-pill">${(user.xp ?? 0).toLocaleString()}</span></td>
                                 <td><span class="badge-pill">${user.badges_count}</span></td>
                                 <td>${user.modules_completed}</td>
                                 <td>${user.lessons_completed}</td>
-                                <td title="${user.wallet_address}" style="font-family: ui-monospace; font-size: 0.82rem;">${formatAddress(user.wallet_address)}</td>
-                                <td title="${user.last_tx_hash}" style="font-family: ui-monospace; font-size: 0.82rem;">${formatHash(user.last_tx_hash)}</td>
+                                <td title="${user.wallet_address}" style="font-family: ui-monospace; font-size: 0.82rem;">${formatAddress(user.wallet_address)} <span class="copy" onclick="event.stopPropagation(); copyToClipboard(${JSON.stringify(user.wallet_address)})">Copy</span></td>
+                                <td title="${user.last_tx_hash}" style="font-family: ui-monospace; font-size: 0.82rem;">${formatHash(user.last_tx_hash)} <span class="copy" onclick="event.stopPropagation(); copyToClipboard(${JSON.stringify(user.last_tx_hash)})">Copy</span></td>
                             </tr>
                         `;
                     }).join('');
