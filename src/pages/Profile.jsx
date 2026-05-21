@@ -6,6 +6,7 @@ import { Trophy, Terminal, Award, Lock, BookOpen, CheckCircle, Clock, Edit2, X, 
 import { useUserProgress } from '@/components/UserProgressContext';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { findBadgeStatus } from '@/lib/utils';
 
 export default function Profile() {
     const CURRICULUM = loadCurriculum();
@@ -115,18 +116,23 @@ export default function Profile() {
                             <h3 className="text-white font-bold mb-6">Achievements</h3>
                             <div className="grid grid-cols-3 gap-4">
                                 {BADGES.map(badge => {
-                                    const isUnlocked = earnedBadgeIds.includes(badge.id);
+                                    const status = findBadgeStatus(badge.id, progress?.badges || []);
+                                    const isUnlocked = status !== 'locked';
+                                    const isPending = status === 'pending';
+                                    const isMinted = status === 'minted';
                                     return (
                                         <div key={badge.id} className="flex flex-col items-center gap-2 group">
                                             <div className={`
                                         w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all
-                                        ${isUnlocked ? `${badge.bg} ${badge.border} ${badge.color} shadow-[0_0_15px_-5px_currentColor]` : 'bg-white/5 border-white/5 text-slate-600 grayscale'}
+                                        ${isMinted ? `${badge.bg} ${badge.border} ${badge.color} shadow-[0_0_15px_-5px_currentColor]` : isPending ? 'bg-yellow-500/10 border-yellow-400 text-yellow-300 shadow-[0_0_15px_-5px_rgba(234,179,8,0.3)]' : 'bg-white/5 border-white/5 text-slate-600 grayscale'}
                                     `}>
                                                 <Award className="w-6 h-6" />
                                             </div>
                                             <span className={`text-[10px] text-center font-medium ${isUnlocked ? 'text-slate-300' : 'text-slate-600'}`}>
                                                 {badge.name}
                                             </span>
+                                            {isPending && <span className="text-[10px] text-yellow-300 uppercase">Pending</span>}
+                                            {isMinted && <span className="text-[10px] text-green-300 uppercase">Minted</span>}
                                         </div>
                                     );
                                 })}

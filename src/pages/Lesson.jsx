@@ -14,6 +14,7 @@ import CodeCompare from '@/components/learn/interactive/CodeCompare';
 import { useUserProgress } from '@/components/UserProgressContext';
 import BadgeAwardModal from '@/components/learn/BadgeAwardModal';
 import { BADGES } from '@/components/learn/badges';
+import { findBadgeStatus, isBadgeMinted } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChallengeLayout from '@/components/learn/challenge/ChallengeLayout';
 
@@ -243,13 +244,19 @@ export default function Lesson() {
     const allLessonIds = currentModule.lessons.map(l => l.id);
     const allFinished = allLessonIds.every(id => newCompletedLessons.includes(id));
     const wasModuleCompletedBefore = (progress.completed_modules || []).includes(currentModule.id);
+    const hasBadgeEntry = newBadges.some((b) => {
+      if (typeof b === 'string') return b === currentModule.id;
+      return b?.id === currentModule.id;
+    });
 
     // Only award XP / mark completion once per module
     if (allFinished && !wasModuleCompletedBefore) {
       newCompletedModules.push(currentModule.id);
       newXP += 100; // Bonus for module
       xpGained += 100;
-      newBadges.push(currentModule.id); // Badge ID matches module ID
+      if (!hasBadgeEntry) {
+        newBadges.push(currentModule.id); // Badge ID matches module ID
+      }
     }
 
     try {
@@ -264,14 +271,19 @@ export default function Lesson() {
       // Check if ALL modules are completed (for completion badge)
       const allModulesCompleted = CURRICULUM.every(mod => newCompletedModules.includes(mod.id));
       const hasCompletionBadge = newBadges.includes('completion');
+      const currentModuleBadgeEntry = (progress?.badges || []).find((b) => {
+        if (typeof b === 'string') return b === currentModule.id;
+        return b?.id === currentModule.id;
+      });
+      const currentModuleBadgeMinted = isBadgeMinted(currentModuleBadgeEntry);
 
       // Show Celebration or Badge
       const isLastLesson = currentLessonIndex === currentModule.lessons.length - 1;
       const isNewModuleCompletion = allFinished && !wasModuleCompletedBefore;
-      const shouldShowModuleBadge = allFinished; // Always allow minting once all lessons are done
+      const shouldShowModuleBadge = allFinished && !currentModuleBadgeMinted;
 
       if (shouldShowModuleBadge) {
-        // Module finished - show badge modal, even if XP/completion was already recorded earlier
+        // Module finished - show badge modal if the badge is not yet minted
         const badge = BADGES.find(b => b.id === currentModule.id);
         if (badge) {
           setEarnedBadge(badge);
@@ -316,6 +328,11 @@ export default function Lesson() {
       }
     }
   };
+
+  const moduleBadgeStatus = currentModule ? findBadgeStatus(currentModule.id, progress?.badges || []) : 'locked';
+  const badgePending = moduleBadgeStatus === 'pending';
+  const badgeMinted = moduleBadgeStatus === 'minted';
+  const moduleCompleted = currentModule ? (progress?.completed_modules || []).includes(currentModule.id) : false;
 
   if (loading) return (
     <div className="min-h-screen bg-[#011623] flex items-center justify-center">
@@ -449,6 +466,34 @@ export default function Lesson() {
               >
                 Submit Answer
               </Button>
+            </div>
+          )}
+
+          {moduleCompleted && badgePending && (
+            <div className="rounded-3xl border border-yellow-400/20 bg-yellow-500/5 p-5 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm text-yellow-100 font-semibold">Module completed — badge mint pending.</p>
+                  <p className="text-slate-300 text-sm">You can mint this badge anytime by opening the badge dialog below.</p>
+                </div>
+                <Button
+                  onClick={() => {
+                    const badge = BADGES.find((b) => b.id === currentModule.id);
+                    if (badge) setEarnedBadge(badge);
+                  }}
+                  className="bg-yellow-400 text-[#011623] hover:bg-yellow-300"
+                >
+                  Mint Pending Badge
+                </Button>
+              </div>
+            </div>
+          )}
+          {moduleCompleted && badgeMinted && (
+            <div className="rounded-3xl border border-green-500/20 bg-green-500/5 p-5 mb-6 text-green-100">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>Badge already minted for this module.</span>
+              </div>
             </div>
           )}
 

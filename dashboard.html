@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -6,50 +6,172 @@
         <title>Fhenix Admin Dashboard</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
+        :root {
+            color-scheme: dark;
+            --bg: #071421;
+            --panel: rgba(10, 20, 38, 0.92);
+            --panel-border: rgba(79, 130, 255, 0.16);
+            --panel-strong: rgba(14, 165, 233, 0.12);
+            --text: #e7eef7;
+            --muted: #94a3b8;
+            --accent: #60a5fa;
+            --accent-dark: #0ea5e9;
+            --success: #86efac;
+            --warning: #facc15;
+            --danger: #fb7185;
+            --radius: 26px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html, body {
+            min-height: 100%;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #011623 0%, #022031 100%);
-            color: #e5e7eb;
-            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at top left, rgba(86, 152, 255, 0.18), transparent 28%),
+                        radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.12), transparent 24%),
+                        linear-gradient(180deg, #060f18 0%, #071421 42%, #091a27 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 32px;
+            background: rgba(7, 17, 33, 0.86);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(18px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-mark {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(56, 189, 248, 0.26), rgba(96, 165, 250, 0.09));
+            color: #e0f2fe;
+            font-weight: 800;
+            font-size: 1.35rem;
+            box-shadow: 0 20px 50px rgba(56, 189, 248, 0.12);
+        }
+
+        .brand-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            line-height: 1.1;
+        }
+
+        .brand-title strong {
+            font-size: 1.15rem;
+            letter-spacing: 0.02em;
+        }
+
+        .brand-title span {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--muted);
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .pill strong {
+            color: var(--text);
+        }
+
+        .logout-btn {
+            border-radius: 999px;
+            padding: 12px 22px;
+            border: 1px solid rgba(96, 165, 250, 0.28);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(96, 165, 250, 0.08));
+            color: var(--text);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(56, 189, 248, 0.18);
+            box-shadow: 0 16px 38px rgba(56, 189, 248, 0.16);
+        }
+
+        .container {
+            max-width: 1680px;
+            margin: 0 auto;
+            padding: 28px 32px 60px;
+        }
+
+        .login-container,
+        .dashboard {
+            min-height: calc(100vh - 88px);
         }
 
         .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            display: grid;
+            place-items: center;
+            padding: 48px 32px;
         }
 
-        .login-box {
-            background: rgba(2, 32, 49, 0.8);
-            border: 1px solid rgba(10, 217, 220, 0.3);
-            border-radius: 20px;
+        .login-panel {
+            width: min(100%, 450px);
             padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(10, 217, 220, 0.2);
+            border-radius: 28px;
+            background: rgba(12, 25, 44, 0.94);
+            border: 1px solid rgba(96, 165, 250, 0.14);
+            box-shadow: 0 40px 120px rgba(1, 10, 25, 0.26);
+            backdrop-filter: blur(22px);
         }
 
-        .login-box h1 {
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: 32px;
-            text-align: center;
+        .login-panel h1 {
+            font-size: 2.3rem;
+            color: #f8fafc;
+            margin-bottom: 16px;
         }
 
-        .login-box p {
-            color: #94a3b8;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 14px;
+        .login-panel p {
+            color: var(--muted);
+            margin-bottom: 32px;
+            line-height: 1.8;
+            font-size: 0.98rem;
         }
 
         .form-group {
@@ -57,1145 +179,1113 @@
         }
 
         .form-group label {
-            display: block;
-            color: #0ad9dc;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 0.82rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.12em;
+            color: #93c5fd;
+            margin-bottom: 10px;
+            display: block;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            transition: all 0.3s;
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(14, 28, 52, 0.92);
+            color: #f8fafc;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .form-group input:focus {
+            border-color: rgba(56, 189, 248, 0.65);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.18);
             outline: none;
-            border-color: #0ad9dc;
-            box-shadow: 0 0 20px rgba(10, 217, 220, 0.3);
-            background: rgba(255, 255, 255, 0.08);
         }
 
         .login-btn {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #0ad9dc 0%, #0a9ba0 100%);
+            padding: 16px 20px;
+            border-radius: 18px;
             border: none;
-            border-radius: 10px;
-            color: #011623;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
+            background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
+            color: #020617;
+            font-size: 0.98rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            margin-top: 10px;
+            cursor: pointer;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
         }
 
         .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(10, 217, 220, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 20px 45px rgba(14, 165, 233, 0.28);
         }
 
         .error {
-            color: #f87171;
-            font-size: 13px;
-            margin-top: 10px;
+            margin-top: 18px;
+            color: #fda4af;
+            font-size: 0.95rem;
             text-align: center;
         }
 
         .dashboard {
             display: none;
-            padding: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
         }
 
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-
-        .dashboard-header h1 {
-            color: #fff;
-            font-size: 32px;
-        }
-
-        .logout-btn {
-            padding: 8px 16px;
-            background: rgba(248, 113, 113, 0.2);
-            border: 1px solid rgba(248, 113, 113, 0.4);
-            color: #f87171;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(248, 113, 113, 0.3);
-        }
-
-        .aggregates {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: minmax(0, 2fr) 420px;
+            gap: 26px;
         }
 
-        .agg-card {
-            background: rgba(2, 32, 49, 0.6);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s;
+        .hero-card,
+        .section-card,
+        .aside-card {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius);
+            box-shadow: 0 30px 70px rgba(4, 13, 27, 0.24);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
         }
 
-        .agg-card:hover {
-            border-color: rgba(10, 217, 220, 0.5);
-            box-shadow: 0 0 20px rgba(10, 217, 220, 0.15);
-            transform: translateY(-4px);
+        .hero-card {
+            padding: 32px;
+            display: grid;
+            gap: 22px;
+            border-image: linear-gradient(135deg, rgba(96, 165, 250, 0.45), rgba(56, 189, 248, 0.20)) 1;
         }
 
-        .agg-card .label {
-            color: #94a3b8;
-            font-size: 12px;
+        .hero-title {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            justify-content: space-between;
+        }
+
+        .hero-title h1 {
+            font-size: clamp(2.4rem, 4vw, 3.5rem);
+            line-height: 1.02;
+        }
+
+        .hero-title small {
+            color: var(--muted);
+            font-size: 0.92rem;
+            display: block;
+        }
+
+        .hero-copy {
+            max-width: 720px;
+            color: var(--muted);
+            line-height: 1.75;
+            font-size: 1rem;
+        }
+
+        .summary-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .summary-pill span {
+            color: var(--muted);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            padding: 28px 0 0;
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 24px;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            min-height: 144px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .kpi-card .label {
+            color: #7dd3fc;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        .agg-card .value {
-            color: #0ad9dc;
-            font-size: 36px;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
             font-weight: 700;
-            font-family: 'Monaco', monospace;
         }
 
-        .agg-card .subtext {
-            color: #64748b;
-            font-size: 12px;
-            margin-top: 8px;
+        .kpi-card .value {
+            color: #ffffff;
+            font-size: 2.05rem;
+            font-weight: 800;
+        }
+
+        .kpi-card .detail {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .section-card {
+            padding: 26px;
+        }
+
+        .section-card h2 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #eef2ff;
+        }
+
+        .section-card p {
+            color: var(--muted);
+            line-height: 1.75;
+            margin-bottom: 22px;
         }
 
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
         }
 
         .chart-card {
-            background: rgba(2, 32, 49, 0.6);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 24px;
+            background: rgba(7, 16, 31, 0.95);
+            border: 1px solid rgba(96, 165, 250, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 240px;
+            max-height: 300px;
         }
 
         .chart-card h3 {
-            color: #0ad9dc;
-            margin-bottom: 20px;
-            font-size: 16px;
+            color: #dbeafe;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .chart-card canvas {
+            width: 100% !important;
+            height: calc(100% - 42px) !important;
+            flex: 1;
         }
 
         .search-sort {
             display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 18px;
             flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
         }
 
         .search-box {
             flex: 1;
-            min-width: 250px;
+            min-width: 260px;
             position: relative;
         }
 
         .search-box input {
             width: 100%;
-            padding: 12px 16px 12px 40px;
-            background: rgba(2, 32, 49, 0.6);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            transition: all 0.3s;
+            padding: 16px 18px 16px 48px;
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(14, 28, 52, 0.94);
+            color: #eff6ff;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .search-box input:focus {
+            border-color: rgba(56, 189, 248, 0.55);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.16);
             outline: none;
-            border-color: #0ad9dc;
-            box-shadow: 0 0 20px rgba(10, 217, 220, 0.2);
         }
 
         .search-box::before {
             content: '🔍';
             position: absolute;
-            left: 12px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #64748b;
+            color: var(--muted);
+            font-size: 1rem;
         }
 
         .sort-controls {
-            display: flex;
-            gap: 10px;
+            min-width: 220px;
         }
 
         select {
-            padding: 10px 14px;
-            background: rgba(2, 32, 49, 0.6);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        select:hover,
-        select:focus {
-            border-color: #0ad9dc;
-            outline: none;
+            width: 100%;
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(14, 28, 52, 0.94);
+            color: #eff6ff;
         }
 
         .table-card {
-            background: rgba(2, 32, 49, 0.6);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 15px;
+            border-radius: 28px;
             overflow: hidden;
-            backdrop-filter: blur(10px);
-            margin-bottom: 30px;
+            border: 1px solid rgba(96, 165, 250, 0.12);
+            background: rgba(7, 16, 31, 0.95);
+            box-shadow: 0 30px 80px rgba(1, 10, 25, 0.22);
         }
 
-        .table-card h3 {
-            color: #0ad9dc;
-            padding: 20px 25px;
-            border-bottom: 1px solid rgba(10, 217, 220, 0.2);
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .table-card .section-card {
+            padding: 28px;
         }
 
         .table-container {
             overflow-x: auto;
+            padding: 0 0 28px;
         }
 
         table {
             width: 100%;
+            min-width: 940px;
             border-collapse: collapse;
         }
 
+        th, td {
+            padding: 18px 20px;
+            font-size: 0.92rem;
+            vertical-align: middle;
+        }
+
         th {
-            padding: 15px 20px;
-            text-align: left;
-            background: rgba(10, 217, 220, 0.05);
-            border-bottom: 1px solid rgba(10, 217, 220, 0.1);
-            color: #0ad9dc;
-            font-size: 12px;
-            font-weight: 600;
+            color: var(--muted);
+            font-weight: 700;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             cursor: pointer;
-            user-select: none;
+            transition: color 0.2s ease;
         }
 
         th:hover {
-            background: rgba(10, 217, 220, 0.1);
+            color: var(--accent);
         }
 
         td {
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(10, 217, 220, 0.05);
-            font-size: 14px;
+            color: var(--text);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
 
         tr:hover {
-            background: rgba(10, 217, 220, 0.03);
+            background: rgba(96, 165, 250, 0.08);
         }
 
         .badge-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            background: rgba(10, 217, 220, 0.2);
-            color: #0ad9dc;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .rank-high {
-            color: #fbbf24;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(96, 165, 250, 0.16);
+            color: #dbeafe;
             font-weight: 700;
         }
 
-        .rank-mid {
-            color: #0ad9dc;
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            color: #d1fae5;
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid rgba(16, 185, 129, 0.24);
+            font-size: 0.88rem;
+            font-weight: 700;
         }
 
-        .rank-low {
-            color: #94a3b8;
-        }
+        .rank-high { color: #facc15; }
+        .rank-mid { color: #7dd3fc; }
+        .rank-low { color: var(--muted); }
 
         .pagination {
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-            padding: 20px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 12px;
+            align-items: center;
+            padding: 0 30px 26px;
         }
 
         .page-btn {
-            padding: 8px 12px;
-            background: rgba(10, 217, 220, 0.1);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            color: #0ad9dc;
-            border-radius: 6px;
+            min-width: 46px;
+            border-radius: 999px;
+            padding: 11px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
             cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
         }
 
         .page-btn:hover,
         .page-btn.active {
-            background: rgba(10, 217, 220, 0.3);
+            background: rgba(96, 165, 250, 0.18);
+            border-color: rgba(96, 165, 250, 0.35);
+            color: #ffffff;
         }
 
         .empty-state {
+            color: var(--muted);
             text-align: center;
-            padding: 40px;
-            color: #64748b;
-        }
-
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            background: rgba(10, 217, 220, 0.05);
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 3px solid #0ad9dc;
-        }
-
-        .stat-item .label {
-            color: #94a3b8;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-
-        .stat-item .value {
-            color: #0ad9dc;
-            font-size: 18px;
-            font-weight: 700;
-            margin-top: 4px;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid rgba(10, 217, 220, 0.2);
-            padding-bottom: 15px;
-        }
-
-        .nav-tab {
-            padding: 10px 20px;
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -17px;
-        }
-
-        .nav-tab:hover {
-            color: #0ad9dc;
-        }
-
-        .nav-tab.active {
-            color: #0ad9dc;
-            border-bottom-color: #0ad9dc;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
+            padding: 36px 0;
+            font-size: 0.98rem;
         }
 
         .api-section {
-            background: rgba(2, 32, 49, 0.6);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            backdrop-filter: blur(10px);
-        }
-
-        .api-section h3 {
-            color: #0ad9dc;
-            margin-bottom: 15px;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .method-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: rgba(10, 217, 220, 0.2);
-            color: #0ad9dc;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            font-family: monospace;
-            margin-right: 10px;
-        }
-
-        .endpoint-path {
-            font-family: monospace;
-            color: #fbbf24;
-            font-size: 14px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .api-description {
-            color: #94a3b8;
-            font-size: 14px;
-            margin: 15px 0;
-            line-height: 1.6;
+            margin-bottom: 22px;
         }
 
         .code-block {
-            background: rgba(0, 0, 0, 0.4);
-            border-left: 3px solid #0ad9dc;
-            padding: 15px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #64748b;
-            overflow-x: auto;
-            margin: 10px 0;
-            line-height: 1.5;
+            background: rgba(15, 23, 42, 0.96);
+            border-radius: 18px;
+            border: 1px solid rgba(96, 165, 250, 0.14);
+            padding: 18px;
+            color: #cbd5e1;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 18px;
         }
 
         .test-form {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 15px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group-test {
-            display: flex;
-            flex-direction: column;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 22px;
         }
 
         .form-group-test label {
-            color: #0ad9dc;
-            font-size: 12px;
-            margin-bottom: 6px;
-            font-weight: 600;
+            color: #7dd3fc;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: block;
         }
 
         .form-group-test input,
         .form-group-test textarea {
-            padding: 10px;
-            background: rgba(2, 32, 49, 0.8);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 6px;
-            color: #fff;
-            font-family: monospace;
-            font-size: 12px;
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(56, 189, 248, 0.16);
+            background: rgba(15, 23, 42, 0.94);
+            color: #e2e8f0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            font-size: 0.92rem;
         }
 
-        .form-group-test textarea {
-            resize: vertical;
-            min-height: 100px;
-            font-family: monospace;
+        .form-group-test input:focus,
+        .form-group-test textarea:focus {
+            border-color: rgba(56, 189, 248, 0.55);
+            outline: none;
         }
 
         .test-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #0ad9dc 0%, #0a9ba0 100%);
+            padding: 14px 20px;
+            border-radius: 18px;
             border: none;
-            border-radius: 8px;
-            color: #011623;
-            font-weight: 700;
-            font-size: 12px;
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+            color: #020617;
+            font-weight: 800;
             cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .test-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(10, 217, 220, 0.4);
+            box-shadow: 0 18px 42px rgba(56, 189, 248, 0.24);
         }
 
         .response-box {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(10, 217, 220, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #64748b;
-            max-height: 300px;
+            background: rgba(15, 23, 42, 0.94);
+            border-radius: 20px;
+            border: 1px solid rgba(56, 189, 248, 0.16);
+            padding: 18px;
+            color: #dbeafe;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 420px;
             overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+            word-break: break-word;
         }
 
         .response-success {
-            color: #10b981;
+            color: #86efac;
+            font-weight: 700;
         }
 
         .response-error {
-            color: #f87171;
+            color: #fda4af;
+            font-weight: 700;
         }
 
-        @media (max-width: 768px) {
-            .dashboard {
-                padding: 15px;
-            }
+        .token-tip {
+            display: inline-flex;
+            gap: 10px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+        }
 
-            .aggregates {
+        .glow-circle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.24;
+            z-index: 0;
+        }
+
+        .glow-1 {
+            width: 420px;
+            height: 420px;
+            background: rgba(59, 130, 246, 0.22);
+            top: -140px;
+            right: -120px;
+        }
+
+        .glow-2 {
+            width: 260px;
+            height: 260px;
+            background: rgba(34, 211, 238, 0.18);
+            bottom: -90px;
+            left: -90px;
+        }
+
+        .glow-3 {
+            width: 180px;
+            height: 180px;
+            background: rgba(168, 85, 247, 0.16);
+            bottom: 220px;
+            right: 72px;
+        }
+
+        @media (max-width: 1180px) {
+            .dashboard-grid {
                 grid-template-columns: 1fr;
             }
 
+            .topbar,
+            .container {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+        }
+
+        @media (max-width: 860px) {
             .charts-grid {
                 grid-template-columns: 1fr;
             }
 
+            .kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
             .search-sort {
                 flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .login-panel {
+                padding: 28px 22px;
             }
 
-            .search-box {
-                min-width: 100%;
+            .kpi-grid {
+                grid-template-columns: 1fr;
             }
 
-            .nav-tabs {
-                flex-wrap: wrap;
+            th, td {
+                padding: 14px 12px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .brand {
+                gap: 12px;
             }
         }
         </style>
     </head>
     <body>
-        <!-- LOGIN SCREEN -->
-        <div id="loginScreen" class="login-container">
-            <div class="login-box">
-                <h1>🔐 Admin</h1>
-                <p>Fhenix Dashboard</p>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input
-                            type="text"
-                            id="username"
-                            placeholder="Enter username"
-                            required
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            placeholder="Enter password"
-                            required
-                        >
-                    </div>
-                    <button type="submit" class="login-btn">Login</button>
-                    <div id="loginError" class="error"></div>
-                </form>
+        <div class="topbar">
+            <div class="brand">
+                <div class="brand-mark">F</div>
+                <div class="brand-title">
+                    <strong>Fhenix Admin</strong>
+                    <span>Secure operations dashboard</span>
+                </div>
             </div>
-        </div>
-        <!-- DASHBOARD SCREEN -->
-        <div id="dashboardScreen" class="dashboard">
-            <div class="dashboard-header">
-                <div>
-                    <h1>📊 Fhenix Admin Center</h1>
-                    <p style="color: #64748b; margin-top: 5px;">Analytics, API Documentation & Testing</p>
+            <div class="topbar-actions">
+                <div class="pill">
+                    <strong>Environment</strong>
+                    <span>Localhost</span>
+                </div>
+                <div class="pill">
+                    <strong>Status</strong>
+                    <span>Ready</span>
                 </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
-            <!-- TAB NAVIGATION -->
-            <div class="nav-tabs">
-                <button class="nav-tab active" onclick="switchTab('analytics')">📊 Analytics</button>
-                <button class="nav-tab" onclick="switchTab('api')">🔌 API Docs</button>
-            </div>
-            <!-- ANALYTICS TAB -->
-            <div id="analytics-tab" class="tab-content active">
-                <div class="aggregates" id="aggregates"></div>
-                <!-- CHARTS -->
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h3>📈 XP Distribution</h3>
-                        <canvas id="xpChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>🏆 Top Modules</h3>
-                        <canvas id="modulesChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>📚 Top Lessons</h3>
-                        <canvas id="lessonsChart"></canvas>
-                    </div>
-                </div>
-                <!-- SEARCH & SORT -->
-                <div class="search-sort">
-                    <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="Search by name, wallet, or user ID...">
-                    </div>
-                    <select id="sortBy">
-                        <option value="xp-desc">XP (High to Low)</option>
-                        <option value="xp-asc">XP (Low to High)</option>
-                        <option value="badges-desc">Badges (Most)</option>
-                        <option value="name-asc">Name (A-Z)</option>
-                        <option value="modules-desc">Modules (Most)</option>
-                    </select>
-                </div>
-                <!-- USERS TABLE -->
-                <div class="table-card">
-                    <h3>👥 All Users</h3>
-                    <div class="table-container">
-                        <table id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th onclick="sortTable('rank')">Rank</th>
-                                    <th onclick="sortTable('name')">Name</th>
-                                    <th onclick="sortTable('xp')">XP</th>
-                                    <th onclick="sortTable('badges')">Badges</th>
-                                    <th onclick="sortTable('modules')">Modules</th>
-                                    <th onclick="sortTable('lessons')">Lessons</th>
-                                    <th>Wallet</th>
-                                    <th>Last TX</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="pagination"></div>
-                </div>
-            </div>
         </div>
-        <!-- API DOCUMENTATION TAB -->
-        <div id="api-tab" class="tab-content">
-            <!-- LOGIN ENDPOINT -->
-            <div class="api-section">
-                <h3>🔐 POST /api/admin/login</h3>
-                <div>
-                    <span class="method-badge">POST</span>
-                    <span class="endpoint-path">/api/admin/login</span>
+        <div class="container">
+            <div class="login-container" id="loginScreen">
+                <div class="login-panel">
+                    <h1>Secure admin access</h1>
+                    <p>Login to manage Fhenix analytics, badge minting insights, and API diagnostics in a premium, professional workspace.</p>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input
+                                id="username"
+                                type="text"
+                                placeholder="Enter username"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                placeholder="Enter password"
+                                required
+                            >
+                        </div>
+                        <button class="login-btn" type="submit">Sign in</button>
+                        <div id="loginError" class="error"></div>
+                    </form>
                 </div>
-                <p class="api-description">Authenticate admin user and receive session token for accessing protected endpoints.</p>
-                <strong style="color: #0ad9dc;">Request Body:</strong>
-                <div class="code-block">
-                    {
+            </div>
+            <main class="dashboard" id="dashboardScreen">
+                <div class="hero-card">
+                    <div class="hero-title">
+                        <div>
+                            <h1>Performance & Operations</h1>
+                            <small>Critical learning metrics, badge mint status, and API health in one polished control plane.</small>
+                        </div>
+                        <div class="status-pill">Connected</div>
+                    </div>
+                    <p class="hero-copy">This dashboard is designed for professional administrators and operations teams. Review the latest engagement trends, completion velocity, and API access instructions without leaving a single elegant interface.</p>
+                    <div class="summary-pills">
+                        <span class="summary-pill">
+                            Secure session
+                            <strong>enabled</strong>
+                        </span>
+                        <span class="summary-pill">
+                            Chart refresh
+                            <strong>automatic</strong>
+                        </span>
+                        <span class="summary-pill">
+                            Badge pipeline
+                            <strong>monitored</strong>
+                        </span>
+                    </div>
+                    <div class="kpi-grid" id="aggregates"></div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-main">
+                        <section class="section-card">
+                            <h2>Platform Insights</h2>
+                            <p>High-level system metrics give you a precise overview of learner performance and badge mint flow.</p>
+                            <div class="charts-grid">
+                                <div class="chart-card">
+                                    <h3>XP Distribution</h3>
+                                    <canvas id="xpChart"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>Top Modules</h3>
+                                    <canvas id="modulesChart"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>Top Lessons</h3>
+                                    <canvas id="lessonsChart"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>Minting Momentum</h3>
+                                    <div class="kpi-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+                                        <div class="kpi-card">
+                                            <div class="label">Verified Minted Badges</div>
+                                            <div class="value" id="mintedBadgesValue">0</div>
+                                            <div class="detail">On-chain minted badges confirmed by the platform.</div>
+                                        </div>
+                                        <div class="kpi-card">
+                                            <div class="label">Badge Holders</div>
+                                            <div class="value" id="badgeHoldersValue">0</div>
+                                            <div class="detail">Unique wallet addresses currently holding badges.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="section-card">
+                            <div class="search-sort">
+                                <div class="search-box">
+                                    <input id="searchInput" type="text" placeholder="Search by name, wallet, or user ID...">
+                                </div>
+                                <div class="sort-controls">
+                                    <select id="sortBy">
+                                        <option value="xp-desc">XP (High to Low)</option>
+                                        <option value="xp-asc">XP (Low to High)</option>
+                                        <option value="badges-desc">Badges (Most)</option>
+                                        <option value="modules-desc">Modules Completed</option>
+                                        <option value="name-asc">Name (A-Z)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <h2>User Activity</h2>
+                            <p>Search, sort, and inspect live user records with wallet and transaction details.</p>
+                            <div class="table-card">
+                                <div class="table-container">
+                                    <table id="usersTable">
+                                        <thead>
+                                            <tr>
+                                                <th onclick="sortTable('rank')">Rank</th>
+                                                <th onclick="sortTable('name')">Name</th>
+                                                <th onclick="sortTable('xp')">XP</th>
+                                                <th onclick="sortTable('badges')">Badges</th>
+                                                <th onclick="sortTable('modules')">Modules</th>
+                                                <th onclick="sortTable('lessons')">Lessons</th>
+                                                <th>Wallet</th>
+                                                <th>Last TX</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="usersTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="pagination" id="pagination"></div>
+                        </section>
+                    </div>
+                    <aside class="aside-card">
+                        <section class="section-card api-section">
+                            <h2>Admin Login API</h2>
+                            <div class="pill">POST</div>
+                            <div class="code-block">
+                                {
   "username": "admin",
   "password": "fhenix2024"
 }
-                </div>
-                <strong style="color: #0ad9dc;">Response (Success):</strong>
-                <div class="code-block">
-                    {
-  "success": true,
-  "token": "abc123def456ghi789jkl012mno345pqr678"
-}
-                </div>
-                <strong style="color: #0ad9dc;">Response (Error):</strong>
-                <div class="code-block">
-                    {
-  "success": false,
-  "error": "Invalid credentials"
-}
-                </div>
-                <strong style="color: #0ad9dc;">Test Endpoint:</strong>
-                <div class="test-form">
-                    <div class="form-row">
-                        <div class="form-group-test">
-                            <label>Username</label>
-                            <input
-                                type="text"
-                                id="loginUsername"
-                                value="admin"
-                                placeholder="admin"
-                            >
-                        </div>
-                        <div class="form-group-test">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                id="loginPassword"
-                                value="fhenix2024"
-                                placeholder="fhenix2024"
-                            >
-                        </div>
-                    </div>
-                    <button class="test-btn" onclick="testLoginEndpoint()">🚀 Test Login</button>
-                    <div id="loginResponse" class="response-box" style="display: none;"></div>
-                </div>
-            </div>
-            <!-- DASHBOARD ENDPOINT -->
-            <div class="api-section">
-                <h3>📊 GET /api/admin/dashboard</h3>
-                <div>
-                    <span class="method-badge">GET</span>
-                    <span class="endpoint-path">/api/admin/dashboard</span>
-                </div>
-                <p class="api-description">
-                    Fetch all analytics data including aggregates, charts data, and complete user information.
-                    <strong>Requires authentication token.</strong>
-                </p>
-                <strong style="color: #0ad9dc;">Headers Required:</strong>
-                <div class="code-block">
-                    X-Admin-Token: {your_session_token}
-                </div>
-                <strong style="color: #0ad9dc;">Response Structure:</strong>
-                <div class="code-block">
-                    {
-  "aggregates": {
-    "totalUsers": 150,
-    "totalXP": 500000,
-    "avgXP": 3333,
-    "totalBadges": 450,
-    "totalMintedBadges": 320,
-    "totalBadgeHolders": 120,
-    "mintedPercentage": 71,
-    "topModules": [...],
-    "topLessons": [...],
-    "xpDistribution": {...}
-  },
-  "users": [
-    {
-      "user_id": "user_123",
-      "display_name": "John Doe",
-      "xp": 5000,
-      "badges_count": 3,
-      "modules_completed": 12,
-      "lessons_completed": 45,
-      "wallet_address": "0x1234...",
-      "last_tx_hash": "0xabcd..."
-    },
-    ...
-  ]
-}
-                </div>
-                <strong style="color: #0ad9dc;">cURL Example:</strong>
-                <div class="code-block">
-                    curl -X GET http://localhost:3101/api/admin/dashboard \
-  -H "X-Admin-Token: your_token_here"
-                </div>
-                <strong style="color: #0ad9dc;">ℹ️ How to Get a Token:</strong>
-                <div class="code-block" style="background: rgba(10, 217, 220, 0.05); border-left-color: #fbbf24;">
-                    1. First, use the POST /api/admin/login endpoint (above) to get a token
-2. Copy the token from the response
-3. Paste it in the Admin Token field below
-4. Click "Fetch Dashboard Data"
-                </div>
-                <strong style="color: #0ad9dc;">Test Endpoint:</strong>
-                <div class="test-form">
-                    <div class="form-row">
-                        <div class="form-group-test">
-                            <label>Admin Token</label>
-                            <input type="text" id="dashboardToken" placeholder="Enter your session token from login">
-                        </div>
-                    </div>
-                    <button class="test-btn" onclick="testDashboardEndpoint()">🚀 Fetch Dashboard Data</button>
-                    <div id="dashboardResponse" class="response-box" style="display: none; max-height: 500px;"></div>
-                </div>
-            </div>
-            <!-- API INTEGRATION GUIDE -->
-            <div class="api-section">
-                <h3>📚 Integration Guide</h3>
-                <p class="api-description">
-                    <strong>Step 1: Login</strong>
-                </p>
-                <div class="code-block">
-                    const loginResponse = await fetch('http://localhost:3101/api/admin/login', {
+                            </div>
+                            <p class="api-description">Authenticate securely to receive an admin token for dashboard access.</p>
+                            <div class="test-form">
+                                <div class="form-group-test">
+                                    <label for="loginUsername">Username</label>
+                                    <input
+                                        id="loginUsername"
+                                        type="text"
+                                        value="admin"
+                                        placeholder="admin"
+                                    >
+                                </div>
+                                <div class="form-group-test">
+                                    <label for="loginPassword">Password</label>
+                                    <input
+                                        id="loginPassword"
+                                        type="password"
+                                        value="fhenix2024"
+                                        placeholder="fhenix2024"
+                                    >
+                                </div>
+                                <button class="test-btn" type="button" onclick="testLoginEndpoint()">Test Login</button>
+                                <div id="loginResponse" class="response-box"></div>
+                            </div>
+                        </section>
+                        <section class="section-card api-section">
+                            <h2>Dashboard API</h2>
+                            <div class="pill">GET</div>
+                            <div class="code-block">X-Admin-Token: your_token_here</div>
+                            <p class="api-description">Fetch the latest analytics and user records. Requires your authenticated admin token.</p>
+                            <div class="test-form">
+                                <div class="form-group-test">
+                                    <label for="dashboardToken">Admin Token</label>
+                                    <input id="dashboardToken" type="text" placeholder="Enter your session token">
+                                </div>
+                                <button class="test-btn" type="button" onclick="testDashboardEndpoint()">Fetch Dashboard</button>
+                                <div id="dashboardResponse" class="response-box"></div>
+                            </div>
+                        </section>
+                        <section class="section-card api-section">
+                            <h2>Integration</h2>
+                            <p class="api-description">Copy this code into your application to authenticate and retrieve admin dashboard data.</p>
+                            <div class="code-block">
+                                const loginResponse = await fetch('http://localhost:3101/api/admin/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    username: 'admin',
-    password: 'fhenix2024'
-  })
+  body: JSON.stringify({ username: 'admin', password: 'fhenix2024' })
 });
-
 const { token } = await loginResponse.json();
 localStorage.setItem('adminToken', token);
-                </div>
-                <p class="api-description" style="margin-top: 20px;">
-                    <strong>Step 2: Fetch Dashboard Data</strong>
-                </p>
-                <div class="code-block">
-                    const dashResponse = await fetch('http://localhost:3101/api/admin/dashboard', {
+                            </div>
+                            <div class="code-block">
+                                const dashResponse = await fetch('http://localhost:3101/api/admin/dashboard', {
   headers: { 'X-Admin-Token': token }
 });
-
 const data = await dashResponse.json();
-console.log(data.aggregates);
-console.log(data.users);
+console.log(data);
+                            </div>
+                            <div class="token-tip">Recommendation: store tokens securely and use environment variables for credentials.</div>
+                        </section>
+                    </aside>
                 </div>
-                <p class="api-description" style="margin-top: 20px;">
-                    <strong>Environment Variables:</strong>
-                </p>
-                <div class="code-block">
-                    ADMIN_USERNAME=admin
-ADMIN_PASSWORD=fhenix2024
-                </div>
-            </div>
+            </main>
         </div>
-    </div>
-    <script>
-        const API_URL = 'http://localhost:3101';
-        let authToken = localStorage.getItem('adminToken');
-        let dashboardData = null;
-        let filteredUsers = [];
-        let currentPage = 1;
-        const itemsPerPage = 20;
-        let charts = {};
+        <div class="glow-circle glow-1"></div>
+        <div class="glow-circle glow-2"></div>
+        <div class="glow-circle glow-3"></div>
+        <script>
+            const API_URL = 'http://localhost:3101';
+            let authToken = localStorage.getItem('adminToken');
+            let dashboardData = null;
+            let filteredUsers = [];
+            let currentPage = 1;
+            const itemsPerPage = 20;
+            let charts = {};
 
-        // TAB SWITCHING
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
-        }
+            function testLoginEndpoint() {
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                const responseBox = document.getElementById('loginResponse');
 
-        // TEST LOGIN ENDPOINT
-        async function testLoginEndpoint() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-            const responseBox = document.getElementById('loginResponse');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/admin/login`, {
+                responseBox.style.display = 'block';
+                responseBox.innerHTML = '<span style="color: #94a3b8;">⏳ Authenticating...</span>';
+
+                fetch(`${API_URL}/api/admin/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        responseBox.innerHTML = `<span class="response-success">✓ Login Successful!</span>\n\nToken: <code>${data.token}</code>`;
+                        document.getElementById('dashboardToken').value = data.token;
+                    } else {
+                        responseBox.innerHTML = `<span class="response-error">✗ Login Failed</span>\n${data.error || 'Invalid credentials'}`;
+                    }
+                }).catch(err => {
+                    responseBox.innerHTML = `<span class="response-error">✗ Connection Error</span>\n${err.message}`;
                 });
+            }
 
-                const data = await response.json();
-                responseBox.style.display = 'block';
-                
-                if (data.success) {
-                    responseBox.innerHTML = `<span class="response-success">✓ Login Successful!</span><br><br>Token: <code>${data.token}</code>`;
-                } else {
-                    responseBox.innerHTML = `<span class="response-error">✗ Login Failed</span><br>Error: ${data.error}`;
+            function testDashboardEndpoint() {
+                const token = document.getElementById('dashboardToken').value;
+                const responseBox = document.getElementById('dashboardResponse');
+
+                if (!token) {
+                    responseBox.style.display = 'block';
+                    responseBox.innerHTML = '<span class="response-error">✗ Error: Please enter a token</span>';
+                    return;
                 }
-            } catch (err) {
-                responseBox.style.display = 'block';
-                responseBox.innerHTML = `<span class="response-error">✗ Connection Error: ${err.message}</span>`;
-            }
-        }
 
-        // TEST DASHBOARD ENDPOINT
-        async function testDashboardEndpoint() {
-            const token = document.getElementById('dashboardToken').value;
-            const responseBox = document.getElementById('dashboardResponse');
-            
-            if (!token) {
                 responseBox.style.display = 'block';
-                responseBox.innerHTML = `<span class="response-error">✗ Error: Please enter a token</span>`;
-                return;
-            }
+                responseBox.innerHTML = '<span style="color: #94a3b8;">⏳ Fetching dashboard data...</span>';
 
-            try {
-                responseBox.innerHTML = `<span style="color: #94a3b8;">⏳ Loading...</span>`;
-                responseBox.style.display = 'block';
-
-                const response = await fetch(`${API_URL}/api/admin/dashboard`, {
+                fetch(`${API_URL}/api/admin/dashboard`, {
                     headers: { 'X-Admin-Token': token }
+                }).then(async res => {
+                    const data = await res.json();
+                    if (res.ok) {
+                        responseBox.innerHTML = `<span class="response-success">✓ Success!</span>\n\n<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } else {
+                        responseBox.innerHTML = `<span class="response-error">✗ Error</span>\n${data.error || 'Failed to fetch data'}`;
+                    }
+                }).catch(err => {
+                    responseBox.innerHTML = `<span class="response-error">✗ Connection Error</span>\n${err.message}`;
                 });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    const prettyJson = JSON.stringify(data, null, 2);
-                    responseBox.innerHTML = `<span class="response-success">✓ Success!</span><br><br><pre style="overflow-x: auto; font-size: 11px;">${prettyJson}</pre>`;
-                } else {
-                    responseBox.innerHTML = `<span class="response-error">✗ Error: ${data.error || 'Failed to fetch data'}</span>`;
-                }
-            } catch (err) {
-                responseBox.style.display = 'block';
-                responseBox.innerHTML = `<span class="response-error">✗ Connection Error: ${err.message}</span><br><br>Make sure the server is running on port 3101`;
             }
-        }
 
-        // Check if already logged in
-        if (authToken) {
-            loadDashboard();
-        }
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
 
-        // LOGIN HANDLER
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await fetch(`${API_URL}/api/admin/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    authToken = data.token;
-                    localStorage.setItem('adminToken', authToken);
-                    loadDashboard();
-                } else {
-                    document.getElementById('loginError').textContent = data.error || 'Login failed';
+                try {
+                    const response = await fetch(`${API_URL}/api/admin/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        authToken = data.token;
+                        localStorage.setItem('adminToken', authToken);
+                        loadDashboard();
+                    } else {
+                        document.getElementById('loginError').textContent = data.error || 'Login failed';
+                    }
+                } catch (err) {
+                    document.getElementById('loginError').textContent = 'Connection error';
                 }
-            } catch (err) {
-                document.getElementById('loginError').textContent = 'Connection error';
+            });
+
+            if (authToken) {
+                loadDashboard();
             }
-        });
 
-        // LOAD DASHBOARD
-        async function loadDashboard() {
-            try {
-                const response = await fetch(`${API_URL}/api/admin/dashboard`, {
-                    headers: { 'X-Admin-Token': authToken }
-                });
+            async function loadDashboard() {
+                try {
+                    const response = await fetch(`${API_URL}/api/admin/dashboard`, {
+                        headers: { 'X-Admin-Token': authToken }
+                    });
+                    if (!response.ok) throw new Error('Unauthorized');
+                    dashboardData = await response.json();
+                    filteredUsers = [...dashboardData.users];
 
-                if (!response.ok) throw new Error('Unauthorized');
-
-                dashboardData = await response.json();
-                filteredUsers = [...dashboardData.users];
-
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboardScreen').style.display = 'block';
-
-                // Auto-populate token in API docs for testing
-                if (document.getElementById('dashboardToken')) {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('dashboardScreen').style.display = 'block';
+                    document.querySelector('.topbar').style.display = 'flex';
                     document.getElementById('dashboardToken').value = authToken;
-                }
 
-                renderAggregates();
-                renderCharts();
+                    renderAggregates();
+                    renderCharts();
+                    filterUsers();
+
+                    document.getElementById('searchInput').addEventListener('input', filterUsers);
+                    document.getElementById('sortBy').addEventListener('change', filterUsers);
+                } catch (err) {
+                    logout();
+                }
+            }
+
+            function renderAggregates() {
+                const agg = dashboardData.aggregates || {};
+                const mintedBadgesValue = agg.totalMintedBadges ?? agg.totalMinted ?? 0;
+                const mintedPercentage = agg.mintedPercentage ?? 0;
+                const cards = [
+                    { label: 'Total Learners', value: agg.totalUsers ?? 0, note: 'Active learner accounts monitored.' },
+                    { label: 'Total XP', value: (agg.totalXP ?? 0).toLocaleString(), note: `Average: ${agg.avgXP ?? 0} XP/user` },
+                    { label: 'Badge Records', value: agg.totalBadges ?? 0, note: 'All tracked badge achievements.' },
+                    { label: 'On-chain Minted', value: mintedBadgesValue, note: `${mintedPercentage}% on-chain confirmation` }
+                ];
+
+                document.getElementById('aggregates').innerHTML = cards.map(card => `
+                    <div class="kpi-card">
+                        <div class="label">${card.label}</div>
+                        <div class="value">${card.value}</div>
+                        <div class="detail">${card.note}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('mintedBadgesValue').textContent = mintedBadgesValue;
+                document.getElementById('badgeHoldersValue').textContent = agg.totalBadgeHolders ?? 0;
+            }
+
+            function renderCharts() {
+                const xpCanvas = document.getElementById('xpChart').getContext('2d');
+                const modulesCanvas = document.getElementById('modulesChart').getContext('2d');
+                const lessonsCanvas = document.getElementById('lessonsChart').getContext('2d');
+
+                if (charts.xp) charts.xp.destroy();
+                const xpData = Object.values(dashboardData.xpDistribution || {});
+                const xpMax = xpData.length ? Math.max(...xpData) : 0;
+                charts.xp = new Chart(xpCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(dashboardData.xpDistribution || {}),
+                        datasets: [{
+                            label: 'Users',
+                            data: xpData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.36)',
+                            borderColor: 'rgba(96, 165, 250, 0.92)',
+                            borderWidth: 2,
+                            borderRadius: 18,
+                            maxBarThickness: 38
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: xpMax > 0 ? xpMax * 1.08 : 10,
+                                ticks: {
+                                    color: '#94a3b8',
+                                    callback: value => value.toLocaleString()
+                                },
+                                grid: { color: 'rgba(255,255,255,0.08)' }
+                            },
+                            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                        }
+                    }
+                });
+
+                if (charts.modules) charts.modules.destroy();
+                charts.modules = new Chart(modulesCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: dashboardData.topModules?.map(m => m.name) || [],
+                        datasets: [{
+                            data: dashboardData.topModules?.map(m => m.count) || [],
+                            backgroundColor: ['#38bdf8', '#818cf8', '#60a5fa', '#22d3ee', '#22c55e'],
+                            borderColor: 'rgba(7, 16, 31, 0.88)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#94a3b8' } } },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+
+                if (charts.lessons) charts.lessons.destroy();
+                charts.lessons = new Chart(lessonsCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: dashboardData.topLessons?.map(l => l.name) || [],
+                        datasets: [{
+                            label: 'Completions',
+                            data: dashboardData.topLessons?.map(l => l.count) || [],
+                            backgroundColor: 'rgba(168, 85, 247, 0.34)',
+                            borderColor: '#c4b5fd',
+                            borderWidth: 2,
+                            borderRadius: 18,
+                            maxBarThickness: 34
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            function filterUsers() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const sortBy = document.getElementById('sortBy').value;
+
+                filteredUsers = dashboardData.users.filter(u =>
+                    u.display_name.toLowerCase().includes(searchTerm) ||
+                    u.user_id.toLowerCase().includes(searchTerm) ||
+                    u.wallet_address.toLowerCase().includes(searchTerm)
+                );
+
+                const [field, order] = sortBy.split('-');
+                filteredUsers.sort((a, b) => {
+                    let aVal = field === 'name' ? a.display_name.toLowerCase() : (a[field] ?? 0);
+                    let bVal = field === 'name' ? b.display_name.toLowerCase() : (b[field] ?? 0);
+                    if (field === 'name') return order === 'desc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+                    return order === 'desc' ? bVal - aVal : aVal - bVal;
+                });
+
+                currentPage = 1;
                 renderTable();
-
-                // Setup search and sort
-                document.getElementById('searchInput').addEventListener('input', filterUsers);
-                document.getElementById('sortBy').addEventListener('change', filterUsers);
-
-            } catch (err) {
-                logout();
             }
-        }
 
-        // RENDER AGGREGATES
-        function renderAggregates() {
-            const agg = dashboardData.aggregates;
-            const mintedBadgesValue = agg.totalMintedBadges ?? agg.totalMinted ?? 0;
-            const mintedPercentage = agg.mintedPercentage ?? 0;
-            const cards = [
-                { label: '👥 Total Users', value: agg.totalUsers ?? 0, subtext: 'Active learners' },
-                { label: '⭐ Total XP', value: (agg.totalXP ?? 0).toLocaleString(), subtext: `Avg: ${agg.avgXP ?? 0}` },
-                { label: '🏆 Total Badge Completions', value: agg.totalBadges ?? 0, subtext: 'Completed badge entries' },
-                { label: '🎖️ Minted Badges', value: mintedBadgesValue, subtext: `${mintedPercentage}% of completed badges` }
-            ];
+            function renderTable() {
+                const start = (currentPage - 1) * itemsPerPage;
+                const paginatedUsers = filteredUsers.slice(start, start + itemsPerPage);
+                const tbody = document.getElementById('usersTableBody');
 
-            document.getElementById('aggregates').innerHTML = cards.map(card => `
-                <div class="agg-card">
-                    <div class="label">${card.label}</div>
-                    <div class="value">${card.value}</div>
-                    <div class="subtext">${card.subtext}</div>
-                </div>
-            `).join('');
-        }
-
-        // RENDER CHARTS
-        function renderCharts() {
-            const ctx1 = document.getElementById('xpChart').getContext('2d');
-            const ctx2 = document.getElementById('modulesChart').getContext('2d');
-            const ctx3 = document.getElementById('lessonsChart').getContext('2d');
-
-            // XP Distribution
-            if (charts.xp) charts.xp.destroy();
-            charts.xp = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(dashboardData.xpDistribution),
-                    datasets: [{
-                        label: 'Users',
-                        data: Object.values(dashboardData.xpDistribution),
-                        backgroundColor: 'rgba(10, 217, 220, 0.3)',
-                        borderColor: '#0ad9dc',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(10, 217, 220, 0.1)' } },
-                        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(10, 217, 220, 0.1)' } }
-                    }
+                if (!paginatedUsers.length) {
+                    tbody.innerHTML = `<tr><td class="empty-state" colspan="8">No matching users found. Try a broader search or adjust sorting.</td></tr>`;
+                } else {
+                    tbody.innerHTML = paginatedUsers.map((user, idx) => {
+                        const rank = start + idx + 1;
+                        const rankClass = rank === 1 ? 'rank-high' : rank <= 3 ? 'rank-mid' : 'rank-low';
+                        return `
+                            <tr>
+                                <td class="${rankClass}">#${rank}</td>
+                                <td>${user.display_name || 'Anonymous'}</td>
+                                <td><span class="badge-pill">${(user.xp ?? 0).toLocaleString()}</span></td>
+                                <td><span class="badge-pill">${user.badges_count}</span></td>
+                                <td>${user.modules_completed}</td>
+                                <td>${user.lessons_completed}</td>
+                                <td title="${user.wallet_address}" style="font-family: ui-monospace; font-size: 0.82rem;">${formatAddress(user.wallet_address)}</td>
+                                <td title="${user.last_tx_hash}" style="font-family: ui-monospace; font-size: 0.82rem;">${formatHash(user.last_tx_hash)}</td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
-            });
 
-            // Top Modules
-            if (charts.modules) charts.modules.destroy();
-            charts.modules = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: dashboardData.topModules.map(m => m.name),
-                    datasets: [{
-                        data: dashboardData.topModules.map(m => m.count),
-                        backgroundColor: ['#0ad9dc', '#06b6d4', '#0891b2', '#0e7490', '#164e63'],
-                        borderColor: 'rgba(2, 32, 49, 0.6)'
-                    }]
-                },
-                options: { plugins: { legend: { labels: { color: '#94a3b8' } } } }
-            });
-
-            // Top Lessons
-            if (charts.lessons) charts.lessons.destroy();
-            charts.lessons = new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: dashboardData.topLessons.map(l => l.name),
-                    datasets: [{
-                        label: 'Completions',
-                        data: dashboardData.topLessons.map(l => l.count),
-                        backgroundColor: 'rgba(10, 217, 220, 0.4)',
-                        borderColor: '#0ad9dc',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(10, 217, 220, 0.1)' } },
-                        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(10, 217, 220, 0.1)' } }
-                    }
-                }
-            });
-        }
-
-        // FILTER USERS
-        function filterUsers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const sortBy = document.getElementById('sortBy').value;
-
-            filteredUsers = dashboardData.users.filter(u =>
-                u.display_name.toLowerCase().includes(searchTerm) ||
-                u.user_id.toLowerCase().includes(searchTerm) ||
-                u.wallet_address.toLowerCase().includes(searchTerm)
-            );
-
-            // Sort
-            const [field, order] = sortBy.split('-');
-            filteredUsers.sort((a, b) => {
-                let aVal = a[field] ?? 0;
-                let bVal = b[field] ?? 0;
-                return order === 'desc' ? bVal - aVal : aVal - bVal;
-            });
-
-            currentPage = 1;
-            renderTable();
-        }
-
-        // RENDER TABLE
-        function renderTable() {
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const paginatedUsers = filteredUsers.slice(start, end);
-
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = paginatedUsers.map((user, idx) => {
-                const rank = start + idx + 1;
-                let rankClass = rank === 1 ? 'rank-high' : rank <= 3 ? 'rank-mid' : 'rank-low';
-                return `
-                    <tr>
-                        <td class="${rankClass}" style="font-weight: 700;">#${rank}</td>
-                        <td>${user.display_name || 'Anonymous'}</td>
-                        <td class="badge-pill">${user.xp.toLocaleString()}</td>
-                        <td><span class="badge-pill">${user.badges_count}</span></td>
-                        <td>${user.modules_completed}</td>
-                        <td>${user.lessons_completed}</td>
-                        <td style="font-family: monospace; font-size: 12px;">${user.wallet_address.substring(0, 10)}...</td>
-                        <td style="font-family: monospace; font-size: 12px;">${user.last_tx_hash.substring(0, 10)}...</td>
-                    </tr>
-                `;
-            }).join('');
-
-            // Pagination
-            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-            const paginationHtml = [];
-            for (let i = 1; i <= totalPages; i++) {
-                paginationHtml.push(`
-                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="currentPage=${i}; renderTable()">
-                        ${i}
-                    </button>
-                `);
+                const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
+                document.getElementById('pagination').innerHTML = Array.from({ length: totalPages }, (_, i) => `
+                    <button class="page-btn ${i + 1 === currentPage ? 'active' : ''}" onclick="changePage(${i + 1})">${i + 1}</button>
+                `).join('');
             }
-            document.getElementById('pagination').innerHTML = paginationHtml.join('');
-        }
 
-        // SORT TABLE COLUMN
-        function sortTable(field) {
-            const sortBy = document.getElementById('sortBy');
-            const currentSort = sortBy.value.split('-')[0];
-            const order = currentSort === field && sortBy.value.endsWith('desc') ? 'asc' : 'desc';
-            sortBy.value = `${field}-${order}`;
-            filterUsers();
-        }
+            function changePage(page) {
+                currentPage = page;
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
 
-        // LOGOUT
-        function logout() {
-            localStorage.removeItem('adminToken');
-            authToken = null;
-            dashboardData = null;
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('dashboardScreen').style.display = 'none';
-            document.getElementById('loginForm').reset();
-            document.getElementById('loginError').textContent = '';
-        }
-    </script>
-</body>
+            function sortTable(field) {
+                const sortBy = document.getElementById('sortBy');
+                const currentSort = sortBy.value.split('-')[0];
+                const order = currentSort === field && sortBy.value.endsWith('desc') ? 'asc' : 'desc';
+                sortBy.value = `${field}-${order}`;
+                filterUsers();
+            }
+
+            function formatAddress(address) {
+                if (!address) return 'N/A';
+                return `${address.slice(0, 8)}...${address.slice(-6)}`;
+            }
+
+            function formatHash(hash) {
+                if (!hash) return 'N/A';
+                return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+            }
+
+            function logout() {
+                localStorage.removeItem('adminToken');
+                authToken = null;
+                dashboardData = null;
+                document.getElementById('loginScreen').style.display = 'grid';
+                document.getElementById('dashboardScreen').style.display = 'none';
+                document.getElementById('loginForm').reset();
+                document.getElementById('loginError').textContent = '';
+            }
+        </script>
+    </body>
 </html>

@@ -404,6 +404,12 @@ app.post('/api/progress/:userId/badge/:badgeId', async (req, res) => {
             return b?.id === badgeId;
         });
 
+        const existingBadge = badgeIndex !== -1 ? progress.badges[badgeIndex] : null;
+        const alreadyMinted = existingBadge && typeof existingBadge === 'object' && existingBadge.txHash && existingBadge.mintedAt;
+        if (alreadyMinted) {
+            return res.status(400).json({ error: `Badge ${badgeId} is already minted for this user.` });
+        }
+
         const updatedBadge = {
             id: badgeId,
             name: badgeName || undefined,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, X, Share2, Check, Loader2 } from 'lucide-react';
+import { Award, X, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
@@ -175,7 +175,6 @@ export default function BadgeAwardModal({ isOpen, onClose, badge }) {
 
             console.log('[BadgeAwardModal] Mint tx submitted:', hash);
             setTxHash(hash);
-            setMintSuccess(true);
             // reset retry counter on success
             retryAttemptRef.current = 0;
 
@@ -184,7 +183,9 @@ export default function BadgeAwardModal({ isOpen, onClose, badge }) {
                 const provider = new ethers.BrowserProvider(window.ethereum);
                 const receipt = await provider.waitForTransaction(hash);
                 if (receipt && receipt.logs) {
-                    const badgeEventTopic = badgeInterface.getEventTopic('BadgeMinted');
+                    const badgeEventTopic = typeof badgeInterface.getEventTopic === 'function'
+                        ? badgeInterface.getEventTopic('BadgeMinted')
+                        : ethers.id('BadgeMinted(address,uint256,string)');
                     const badgeLog = receipt.logs.find(
                         (log) => log.topics[0] === badgeEventTopic && log.address.toLowerCase() === badgeContractAddress.toLowerCase()
                     );
@@ -241,11 +242,16 @@ export default function BadgeAwardModal({ isOpen, onClose, badge }) {
                             ]
                         });
                     }
+                    setMintSuccess(true);
                 } else {
-                    console.warn('[BadgeAwardModal] Failed to save badge to database');
+                    const body = await saveBadgeResponse.text();
+                    console.warn('[BadgeAwardModal] Failed to save badge to database', body);
+                    setMintError('Badge was minted on-chain, but saving to your profile failed. Please retry to persist the badge.');
                 }
             } catch (err) {
                 console.warn('[BadgeAwardModal] Error saving badge to database:', err);
+                setMintError('Badge was minted on-chain, but saving to your profile failed. Please retry to persist the badge.');
+                setMintSuccess(false);
             }
 
         } catch (error) {
@@ -445,20 +451,12 @@ export default function BadgeAwardModal({ isOpen, onClose, badge }) {
                                     </Button>
                                 </>
                             ) : (
-                                <>
-                                    <Button
-                                        onClick={onClose}
-                                        className="flex-1 bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold h-12 rounded-xl"
-                                    >
-                                        Awesome!
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="flex-1 border-white/10 hover:bg-white/5 text-black h-12 rounded-xl gap-2"
-                                    >
-                                        <Share2 className="w-4 h-4" /> Share
-                                    </Button>
-                                </>
+                                <Button
+                                    onClick={onClose}
+                                    className="flex-1 bg-[#0AD9DC] hover:bg-[#0AD9DC]/90 text-[#011623] font-bold h-12 rounded-xl"
+                                >
+                                    Awesome!
+                                </Button>
                             )}
                         </motion.div>
 

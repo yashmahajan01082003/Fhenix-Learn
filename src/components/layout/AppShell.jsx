@@ -211,9 +211,15 @@ export default function AppShell({ children, user, userProgress }) {
                                       : 'text-slate-500 hover:text-white hover:bg-white/5'
                                       }`}
                                   >
-                                    <div className="flex items-center gap-2">
-                                      {isLessonCompleted && <CheckCircle className="w-3 h-3 text-green-400" />}
-                                      <span className="line-clamp-1">{lesson.title}</span>
+                                    <div className="flex items-start gap-2">
+                                      {isLessonCompleted && (
+                                        <span className="flex-none flex h-4 w-4 items-center justify-center text-green-400">
+                                          <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                                        </span>
+                                      )}
+                                      <span className="flex-1 text-left text-slate-400 group-hover:text-white break-words whitespace-normal text-xs">
+                                        {lesson.title}
+                                      </span>
                                     </div>
                                   </Link>
                                 );
