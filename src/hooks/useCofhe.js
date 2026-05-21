@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { createPublicClient, createWalletClient, custom } from 'viem';
 import { arbitrumSepolia } from 'viem/chains';
+import { arbSepolia } from '@cofhe/sdk/chains';
 import { createCofheConfig, createCofheClient } from '@cofhe/sdk/web';
 import { useCofheStore } from '@/services/store/cofheStore';
 
@@ -17,6 +18,9 @@ export function useCofhe(config = {}) {
     const [isGeneratingPermit, setIsGeneratingPermit] = useState(false);
     const [error, setError] = useState(null);
     const [permit, setPermit] = useState(undefined);
+    const [publicClient, setPublicClient] = useState(null);
+    const [walletClient, setWalletClient] = useState(null);
+    const [account, setAccount] = useState(null);
 
     useEffect(() => {
         const initialize = async () => {
@@ -53,6 +57,10 @@ export function useCofhe(config = {}) {
 
                 await cofheClientSingleton.connect(publicClient, walletClient);
 
+                setPublicClient(publicClient);
+                setWalletClient(walletClient);
+                setAccount(wallet.address);
+
                 console.log('[useCofhe] cofhesdk client connected');
                 setGlobalIsInitialized(true);
                 setError(null);
@@ -68,7 +76,7 @@ export function useCofhe(config = {}) {
     }, [authenticated, wallets, globalIsInitialized, isInitializing, setGlobalIsInitialized]);
 
     const createPermit = useCallback(async () => {
-        if (!globalIsInitialized || !cofheClientSingleton) {
+        if (!globalIsInitialized || !cofheClientSingleton || !account) {
             return { success: false, error: 'CoFHE not initialized' };
         }
 
@@ -76,7 +84,7 @@ export function useCofhe(config = {}) {
             setIsGeneratingPermit(true);
             setError(null);
 
-            const createdPermit = await cofheClientSingleton.permits.getOrCreateSelfPermit();
+            const createdPermit = await cofheClientSingleton.permits.getOrCreateSelfPermit(arbSepolia.id, account);
             setPermit(createdPermit);
 
             console.log('[useCofhe] Permit created via cofhesdk');
@@ -88,7 +96,7 @@ export function useCofhe(config = {}) {
         } finally {
             setIsGeneratingPermit(false);
         }
-    }, [globalIsInitialized]);
+    }, [globalIsInitialized, account]);
 
     return {
         isInitialized: globalIsInitialized,
@@ -96,6 +104,9 @@ export function useCofhe(config = {}) {
         isGeneratingPermit,
         error,
         permit,
+        account,
+        publicClient,
+        walletClient,
         createPermit,
         client: cofheClientSingleton,
     };

@@ -439,7 +439,7 @@ export default function BadgeAwardModal({ isOpen, onClose, badge }) {
                                     <Button
                                         onClick={onClose}
                                         variant="outline"
-                                        className="flex-1 border-white/10 hover:bg-white/5 text-white h-12 rounded-xl"
+                                        className="flex-1 border-white/10 hover:bg-white/5 text-black h-12 rounded-xl"
                                     >
                                         Skip
                                     </Button>
@@ -454,7 +454,7 @@ export default function BadgeAwardModal({ isOpen, onClose, badge }) {
                                     </Button>
                                     <Button
                                         variant="outline"
-                                        className="flex-1 border-white/10 hover:bg-white/5 text-white h-12 rounded-xl gap-2"
+                                        className="flex-1 border-white/10 hover:bg-white/5 text-black h-12 rounded-xl gap-2"
                                     >
                                         <Share2 className="w-4 h-4" /> Share
                                     </Button>

@@ -12,7 +12,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Encryptable } from '@cofhe/sdk';
+import { Encryptable, FheTypes } from '@cofhe/sdk';
+import { arbSepolia } from '@cofhe/sdk/chains';
 import { useCofhe } from '@/hooks/useCofhe';
 
 export default function EncryptionPlayground() {
@@ -23,26 +24,52 @@ export default function EncryptionPlayground() {
     const [selectedOp, setSelectedOp] = useState('add');
     const [opValue, setOpValue] = useState('5');
 
-    const { isInitialized, client } = useCofhe();
+    const { isInitialized, client, account } = useCofhe();
+
+    const generateRandomHex = (length) =>
+        Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+    const createSimulatedEncryptedUint32 = () => ({
+        ctHash: `0x${generateRandomHex(64)}`,
+        securityZone: 0,
+        utype: FheTypes.Uint32,
+        signature: `0x${generateRandomHex(130)}`,
+    });
 
     const handleEncrypt = async () => {
         if (!plaintext || isNaN(plaintext)) return;
-        if (!isInitialized || !client) {
-            console.error('CoFHE not initialized');
-            return;
-        }
 
         setIsEncrypting(true);
 
         try {
             const val = BigInt(Number(plaintext));
-            const [encrypted] = await client
-                .encryptInputs([Encryptable.uint32(val)])
-                .execute();
+
+            if (!isInitialized || !client) {
+                const simulatedEncrypted = createSimulatedEncryptedUint32();
+                console.warn('CoFHE not initialized. Using simulated InEuint32 output for playground.');
+                setEncryptedValue({
+                    handle: simulatedEncrypted.ctHash,
+                    original: val,
+                    type: 'euint32',
+                    raw: simulatedEncrypted,
+                    simulated: true,
+                });
+                return;
+            }
+
+            let encryptionRequest = client.encryptInputs([Encryptable.uint32(val)]);
+            if (account) {
+                encryptionRequest = encryptionRequest.setChainId(arbSepolia.id).setAccount(account);
+            }
+
+            const [encrypted] = await encryptionRequest.execute();
+
             let handle = '0x...';
             if (typeof encrypted === 'string') handle = encrypted;
             else if (encrypted && typeof encrypted === 'object') {
-                const h = Object.values(encrypted).find((v) => typeof v === 'string' && v.startsWith('0x') && v.length > 20);
+                const h = Object.values(encrypted).find(
+                    (v) => typeof v === 'string' && v.startsWith('0x') && v.length > 20
+                );
                 if (h) handle = h;
                 else handle = JSON.stringify(encrypted).substring(0, 20) + '...';
             }
@@ -52,9 +79,18 @@ export default function EncryptionPlayground() {
                 original: val,
                 type: 'euint32',
                 raw: encrypted,
+                simulated: false,
             });
         } catch (err) {
             console.error('Encryption failed:', err);
+            const simulatedEncrypted = createSimulatedEncryptedUint32();
+            setEncryptedValue({
+                handle: simulatedEncrypted.ctHash,
+                original: BigInt(Number(plaintext)),
+                type: 'euint32',
+                raw: simulatedEncrypted,
+                simulated: true,
+            });
         } finally {
             setIsEncrypting(false);
             setOperations([]);
@@ -160,11 +196,10 @@ export default function EncryptionPlayground() {
                             <Button
                                 onClick={handleEncrypt}
                                 disabled={!plaintext || !!encryptedValue || isEncrypting}
-                                className={`h-12 px-6 font-bold min-w-[140px] transition-all ${
-                                    !!encryptedValue
-                                        ? 'bg-green-500/20 text-green-500 hover:bg-green-500/30 cursor-default'
-                                        : 'bg-[#0AD9DC] text-[#011623] hover:bg-[#0AD9DC]/90'
-                                }`}
+                                className={`h-12 px-6 font-bold min-w-[140px] transition-all ${!!encryptedValue
+                                    ? 'bg-green-500/20 text-green-500 hover:bg-green-500/30 cursor-default'
+                                    : 'bg-[#0AD9DC] text-[#011623] hover:bg-[#0AD9DC]/90'
+                                    }`}
                             >
                                 {isEncrypting ? (
                                     <RefreshCcw className="w-4 h-4 animate-spin mr-2" />
@@ -206,6 +241,22 @@ export default function EncryptionPlayground() {
                                         </div>
                                     </div>
 
+                                    <div className="bg-slate-950/30 rounded-xl p-3 font-mono text-xs text-slate-300 border border-white/5 overflow-auto max-h-40 mb-4">
+                                        <div className="text-slate-400 uppercase tracking-widest text-[10px] mb-2">
+                                            Encrypted Object Preview
+                                        </div>
+                                        <pre className="whitespace-pre-wrap break-words text-[11px] leading-relaxed">
+                                            {JSON.stringify(encryptedValue.raw, null, 2)}
+                                        </pre>
+                                    </div>
+
+                                    {encryptedValue.simulated && (
+                                        <div className="text-xs text-yellow-300 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20 mb-4">
+                                            CoFHE is not fully initialized in this session, so this playground is displaying a simulated
+                                            InEuint32 ciphertext object for demonstration.
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-2 text-xs text-slate-400 bg-[#0AD9DC]/5 p-3 rounded-lg border border-[#0AD9DC]/10">
                                         <Shield className="w-4 h-4 text-[#0AD9DC] shrink-0" />
                                         The blockchain only sees this. The mathematical properties allow operations
@@ -235,11 +286,10 @@ export default function EncryptionPlayground() {
                                             <button
                                                 key={op}
                                                 onClick={() => setSelectedOp(op)}
-                                                className={`px-4 py-2 rounded-lg font-mono text-sm font-bold border transition-all uppercase ${
-                                                    selectedOp === op
-                                                        ? 'bg-[#0AD9DC]/20 border-[#0AD9DC] text-[#0AD9DC]'
-                                                        : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
-                                                }`}
+                                                className={`px-4 py-2 rounded-lg font-mono text-sm font-bold border transition-all uppercase ${selectedOp === op
+                                                    ? 'bg-[#0AD9DC]/20 border-[#0AD9DC] text-[#0AD9DC]'
+                                                    : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
+                                                    }`}
                                             >
                                                 {op}
                                             </button>
@@ -257,7 +307,7 @@ export default function EncryptionPlayground() {
                                             onChange={(e) => setOpValue(e.target.value)}
                                             className="w-24 bg-black/20 border-white/10 text-white font-mono text-center"
                                         />
-                                        <Button onClick={addOperation} className="bg-white/10 hover:bg-white/20 text-white">
+                                        <Button onClick={addOperation} className="bg-white/10 hover:bg-white/20 text-black">
                                             Apply
                                         </Button>
                                     </div>
@@ -323,19 +373,19 @@ export default function EncryptionPlayground() {
                                             <span className="table-cell text-slate-700 select-none pr-4 text-right w-8">
                                                 {i + 1}
                                             </span>
-                                        <span
-                                            className="table-cell"
-                                            dangerouslySetInnerHTML={{
-                                                __html: line
-                                                    .replace(/\/\/.*/g, '<span class="text-slate-500 italic">$&</span>')
-                                                    .replace(
-                                                        /(const|await|function|public)/g,
-                                                        '<span class="text-purple-400">$1</span>'
-                                                    )
-                                                    .replace(/(CoFHE|FHE|cofhesdk)/g, '<span class="text-yellow-400">$1</span>')
-                                                    .replace(/(euint32|ebool|string)/g, '<span class="text-[#0AD9DC]">$1</span>'),
-                                            }}
-                                        />
+                                            <span
+                                                className="table-cell"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: line
+                                                        .replace(/\/\/.*/g, '<span class="text-slate-500 italic">$&</span>')
+                                                        .replace(
+                                                            /(const|await|function|public)/g,
+                                                            '<span class="text-purple-400">$1</span>'
+                                                        )
+                                                        .replace(/(CoFHE|FHE|cofhesdk)/g, '<span class="text-yellow-400">$1</span>')
+                                                        .replace(/(euint32|ebool|string)/g, '<span class="text-[#0AD9DC]">$1</span>'),
+                                                }}
+                                            />
                                         </div>
                                     ))}
                             </pre>
