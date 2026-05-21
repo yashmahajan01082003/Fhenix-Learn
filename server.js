@@ -435,6 +435,177 @@ app.post('/api/progress/:userId/badge/:badgeId', async (req, res) => {
     }
 });
 
+// ============ ADMIN DASHBOARD ENDPOINTS ============
+// Simple in-memory session store
+const sessions = new Map();
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'fhenix2024';
+
+function generateSessionToken() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+function validateSession(req) {
+    const token = req.headers['x-admin-token'] || req.query.token;
+    if (!token || !sessions.has(token)) {
+        return false;
+    }
+    const session = sessions.get(token);
+    if (Date.now() - session.createdAt > 24 * 60 * 60 * 1000) {
+        sessions.delete(token);
+        return false;
+    }
+    return true;
+}
+
+// Admin login endpoint
+app.post('/api/admin/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        const token = generateSessionToken();
+        sessions.set(token, { createdAt: Date.now(), username });
+        return res.json({ success: true, token });
+    }
+
+    res.status(401).json({ error: 'Invalid credentials' });
+});
+
+// Admin dashboard data endpoint
+app.get('/api/admin/dashboard', async (req, res) => {
+    if (!validateSession(req)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const allProgress = await storage.getAll();
+
+        // Aggregates
+        const totalUsers = allProgress.length;
+        const totalXP = allProgress.reduce((sum, u) => sum + (u.xp || 0), 0);
+        const totalBadges = allProgress.reduce((sum, u) => sum + (u.badges?.length || 0), 0);
+
+        // Strong validation for minted badges per specification
+        const isMintedBadge = (badge) => {
+            if (!badge || typeof badge !== 'object') return false;
+            const hasId = typeof badge.id === 'string' && badge.id.length > 0;
+            const hasName = typeof badge.name === 'string' && badge.name.length > 0;
+            const hasTx = typeof badge.txHash === 'string' && /^0x[a-fA-F0-9]{64}$/.test(badge.txHash);
+            const isHex40 = (addr) => typeof addr === 'string' && /^0x[a-fA-F0-9]{40}$/.test(addr);
+            const hasContract = isHex40(badge.contractAddress);
+            const hasWallet = isHex40(badge.walletAddress);
+            const hasMintedAt = typeof badge.mintedAt === 'string' && !isNaN(Date.parse(badge.mintedAt));
+
+            return hasId && hasName && hasTx && hasContract && hasWallet && hasMintedAt;
+        };
+
+        const totalMintedBadges = allProgress.reduce((sum, u) => {
+            const badges = Array.isArray(u.badges) ? u.badges : [];
+            return sum + badges.filter(isMintedBadge).length;
+        }, 0);
+
+        const totalBadgeHolders = allProgress.filter(u => Array.isArray(u.badges) && u.badges.some(b => !!b)).length;
+        const avgXP = totalUsers > 0 ? Math.round(totalXP / totalUsers) : 0;
+
+        // Module and lesson completion stats
+        const moduleCompletions = {};
+        const lessonCompletions = {};
+
+        allProgress.forEach(user => {
+            (user.completed_modules || []).forEach(mod => {
+                moduleCompletions[mod] = (moduleCompletions[mod] || 0) + 1;
+            });
+            (user.completed_lessons || []).forEach(lesson => {
+                lessonCompletions[lesson] = (lessonCompletions[lesson] || 0) + 1;
+            });
+        });
+
+        const topModules = Object.entries(moduleCompletions)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
+
+        const topLessons = Object.entries(lessonCompletions)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
+
+        // Distribution stats
+        const xpRanges = {
+            '0-1000': 0,
+            '1000-5000': 0,
+            '5000-10000': 0,
+            '10000+': 0
+        };
+
+        allProgress.forEach(user => {
+            const xp = user.xp || 0;
+            if (xp < 1000) xpRanges['0-1000']++;
+            else if (xp < 5000) xpRanges['1000-5000']++;
+            else if (xp < 10000) xpRanges['5000-10000']++;
+            else xpRanges['10000+']++;
+        });
+
+        res.json({
+            aggregates: {
+                totalUsers,
+                totalXP,
+                avgXP,
+                totalBadges,
+                totalMintedBadges,
+                totalBadgeHolders,
+                totalMinted: totalBadgeHolders,
+                mintedPercentage: totalBadges > 0 ? Math.round((totalMintedBadges / totalBadges) * 100) : 0
+            },
+            topModules,
+            topLessons,
+            xpDistribution: xpRanges,
+            users: allProgress.sort((a, b) => (b.xp || 0) - (a.xp || 0)).map(u => ({
+                user_id: u.user_id,
+                display_name: u.display_name || 'Anonymous',
+                xp: u.xp || 0,
+                badges_count: u.badges?.length || 0,
+                modules_completed: u.completed_modules?.length || 0,
+                lessons_completed: u.completed_lessons?.length || 0,
+                wallet_address: u.wallet_address || 'N/A',
+                last_tx_hash: u.last_tx_hash || 'N/A'
+            }))
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message || 'Failed to fetch dashboard data' });
+    }
+});
+
+// Serve dashboard HTML at multiple routes
+app.get(['/admin/dashboard', '/admin', '/dashboard'], async (req, res) => {
+    try {
+        const dashboardPath = join(__dirname, 'dashboard.html');
+        const dashboardHTML = await fs.readFile(dashboardPath, 'utf8');
+        res.setHeader('Content-Type', 'text/html');
+        res.send(dashboardHTML);
+    } catch (err) {
+        console.error('Error serving dashboard:', err);
+        res.status(500).send(`
+            <html>
+                <body style="background: #011623; color: #fff; font-family: Arial;">
+                    <h1>❌ Error Loading Dashboard</h1>
+                    <p>Could not find dashboard.html file</p>
+                    <p>Error: ${err.message}</p>
+                </body>
+            </html>
+        `);
+    }
+});
+
+// Dashboard help & redirect
+app.get('/', (req, res) => {
+    res.redirect('/admin/dashboard');
+});
+
 const PORT = process.env.PORT || 3101;
 app.listen(PORT, () => {
     console.log(`API server running on http://localhost:${PORT}`);
