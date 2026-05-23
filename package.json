@@ -1,6 +1,7 @@
 {
   "name": "fhenix-learn",
   "private": true,
+  "packageManager": "npm@10",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
