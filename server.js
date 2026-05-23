@@ -442,6 +442,11 @@ app.post('/api/progress/:userId/badge/:badgeId', async (req, res) => {
 });
 
 // ============ ADMIN DASHBOARD ENDPOINTS ============
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Backend is running', timestamp: new Date().toISOString() });
+});
+
 // Simple in-memory session store
 const sessions = new Map();
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';

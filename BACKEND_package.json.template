@@ -1,0 +1,28 @@
+{
+  "name": "fhenix-learn-backend",
+  "description": "Fhenix Learn Backend API - Badge minting and progress tracking",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test test/**/*.test.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "keywords": [
+    "fhenix",
+    "badge",
+    "blockchain"
+  ],
+  "author": "Fhenix Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {}
+}

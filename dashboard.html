@@ -1034,7 +1034,23 @@ console.log(data);
         <div class="glow-circle glow-2"></div>
         <div class="glow-circle glow-3"></div>
         <script>
-            const API_URL = 'http://localhost:3101';
+            // API URL resolution for standalone HTML
+            // Priority: window.API_URL (injected by server) → localStorage → localhost
+            const API_URL = (() => {
+                // Check if server injected it
+                if (typeof window.API_URL !== 'undefined') return window.API_URL;
+                
+                // Check localStorage for saved API URL
+                const saved = localStorage.getItem('API_URL');
+                if (saved) return saved;
+                
+                // Get from environment or default to localhost
+                const apiUrl = localStorage.getItem('adminApiUrl') || 'http://localhost:3101';
+                return apiUrl;
+            })();
+            
+            console.log('📡 API URL:', API_URL);
+            
             let authToken = localStorage.getItem('adminToken');
             let dashboardData = null;
             let filteredUsers = [];
@@ -1178,23 +1194,36 @@ console.log(data);
                 e.preventDefault();
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
+                const errorEl = document.getElementById('loginError');
 
                 try {
+                    console.log(`🔗 Connecting to API: ${API_URL}/api/admin/login`);
                     const response = await fetch(`${API_URL}/api/admin/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
                     });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
                     const data = await response.json();
+                    console.log('✓ API Response:', data);
+                    
                     if (data.success) {
                         authToken = data.token;
                         localStorage.setItem('adminToken', authToken);
+                        errorEl.textContent = '';
                         loadDashboard();
                     } else {
-                        document.getElementById('loginError').textContent = data.error || 'Login failed';
+                        errorEl.textContent = data.error || 'Login failed';
+                        console.error('❌ Login error:', data.error);
                     }
                 } catch (err) {
-                    document.getElementById('loginError').textContent = 'Connection error';
+                    console.error('❌ Connection error:', err);
+                    errorEl.textContent = `Cannot reach server: ${API_URL}\n\nMake sure backend is running!\n${err.message}`;
+                    errorEl.style.whiteSpace = 'pre-wrap';
                 }
             });
 

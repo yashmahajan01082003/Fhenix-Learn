@@ -1,0 +1,29 @@
+{
+    "buildCommand": "vite build && cp dashboard.html dist/dashboard.html",
+    "outputDirectory": "dist",
+    "framework": "vite",
+    "regions": [
+        "iad1"
+    ],
+    "env": {
+        "VITE_API_URL": "@vite_api_url",
+        "PROGRESS_API_ORIGIN": "@progress_api_origin"
+    },
+    "rewrites": [
+        {
+            "source": "/dashboard.html",
+            "destination": "/dashboard.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/api/:path*",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache"
+                }
+            ]
+        }
+    ]
+}
